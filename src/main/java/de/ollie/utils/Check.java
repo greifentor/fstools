@@ -27,6 +27,19 @@ public class Check {
 	}
 
 	/**
+	 * Checks if the passed condition is "true" or throws the passed exception.
+	 *
+	 * @param condition        The condition which is to check.
+	 * @param runtimeException The exception to throw.
+	 * @throws NullPointerException Passing a null value as exception an a "false" condition.
+	 */
+	public static <E extends Exception> void ensure(boolean condition, E exception) throws E { // NOSONAR
+		if (!condition) {
+			throw exception;
+		}
+	}
+
+	/**
 	 * Checks if the passed condition is "true" or throws an IllegalArgumentException with passed message.
 	 *
 	 * @param condition The condition which is to check.
