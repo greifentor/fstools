@@ -5,6 +5,7 @@ import static de.ollie.utils.Check.ensure;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,13 +93,15 @@ public class FileSystemTreeTraversal {
 	}
 
 	private void traverse(File file) throws IOException {
-		ensure(file.exists(), new FileNotFoundException("file does not exists: " + file.getAbsolutePath()));
-		if (file.isFile()) {
-			fireFileFoundEvent(file);
-		} else if (file.isDirectory()) {
-			fireDirectoryFoundEvent(file);
-			for (File f : file.listFiles()) {
-				traverse(f);
+		if (!Files.isSymbolicLink(Path.of(file.getAbsolutePath()))) {
+			ensure(file.exists(), new FileNotFoundException("file does not exists: " + file.getAbsolutePath()));
+			if (file.isFile()) {
+				fireFileFoundEvent(file);
+			} else if (file.isDirectory()) {
+				fireDirectoryFoundEvent(file);
+				for (File f : file.listFiles()) {
+					traverse(f);
+				}
 			}
 		}
 	}
