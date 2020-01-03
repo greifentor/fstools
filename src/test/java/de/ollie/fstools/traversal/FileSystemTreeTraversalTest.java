@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import de.ollie.fstools.Counter;
+
 /**
  * Unit tests for class "FileSystemTreeTraversal".
  *
@@ -136,20 +138,6 @@ public class FileSystemTreeTraversalTest {
 			assertThat(count.getCount(), equalTo(3));
 		}
 
-	}
-
-}
-
-class Counter {
-
-	private int count = 0;
-
-	void inc() {
-		count++;
-	}
-
-	int getCount() {
-		return this.count;
 	}
 
 }

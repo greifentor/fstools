@@ -1,12 +1,16 @@
 package de.ollie.fstools.copier;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,6 +19,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import de.ollie.fstools.Counter;
 
 /**
  * Unit tests for class "FileCopier".
@@ -82,6 +88,41 @@ public class FileCopierTest {
 			// Check
 			String targetContent = Files.readString(Path.of(targetPath));
 			assertEquals(sourceContent, targetContent);
+		}
+
+		@DisplayName("Fires an event if the file has been copied.")
+		@Test
+		void passCorrectFiles_FiresAnEvent(@TempDir Path tempDir) throws Exception {
+			// Prepare
+			unitUnderTest = new FileCopier();
+			String sourcePath = "src/test/resources/testfolder/testFile.txt";
+			String targetPath = tempDir + "/copiedFile.txt";
+			File sourceFile = new File(sourcePath);
+			File targetFile = new File(targetPath);
+			unitUnderTest.addFileCopierListener(event -> {
+				assertTrue(event.getAbsoluteSourcePathName().endsWith(sourcePath));
+				assertEquals(sourceFile.length(), event.getBytesCopied());
+				assertEquals(0L, event.getBytesLeft());
+			});
+			// Run
+			unitUnderTest.copy(sourceFile, targetFile);
+		}
+
+		@DisplayName("Fires an event if the file has been copied (with alternate buffer size).")
+		@Test
+		void passCorrectFiles_WithAlternateBufferSize_FiresAnEvent(@TempDir Path tempDir) throws Exception {
+			// Prepare
+			unitUnderTest = new FileCopier(1);
+			Counter counter = new Counter();
+			unitUnderTest.addFileCopierListener(event -> counter.inc());
+			String sourcePath = "src/test/resources/testfolder/testFile.txt";
+			String targetPath = tempDir + "/copiedFile.txt";
+			File sourceFile = new File(sourcePath);
+			File targetFile = new File(targetPath);
+			// Run
+			unitUnderTest.copy(sourceFile, targetFile);
+			// Check
+			assertThat((long) counter.getCount(), equalTo(sourceFile.length()));
 		}
 
 	}
