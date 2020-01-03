@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A class which is able to copy files in a file system.
@@ -16,6 +18,7 @@ import java.io.IOException;
 public class FileCopier {
 
 	private int bufferSize = 0;
+	private List<FileCopierListener> listeners = new ArrayList<>();
 
 	/**
 	 * Creates a file copier object with default values.
@@ -32,6 +35,17 @@ public class FileCopier {
 	public FileCopier(int bufferSize) {
 		super();
 		this.bufferSize = bufferSize;
+	}
+
+	/**
+	 * Adds the passed listener to the listeners which are observing the file copier.
+	 * 
+	 * @param listener The listener to add.
+	 * @throws IllegalArgumentException Passing a null value.
+	 */
+	public void addFileCopierListener(FileCopierListener listener) {
+		ensure(listener != null, "listener cannot be null.");
+		this.listeners.add(listener);
 	}
 
 	/**
@@ -56,10 +70,31 @@ public class FileCopier {
 			byte[] fileContent = new byte[this.bufferSize];
 			int offset = 0;
 			int cnt = 0;
+			long bytesLeft = sourceFile.length();
+			long bytesCopied = 0;
 			while ((cnt = inputStream.read(fileContent, offset, this.bufferSize)) > 0) {
 				outputStream.write(fileContent, offset, cnt);
+				bytesCopied += cnt;
+				bytesLeft -= cnt;
+				fireFileCopierEvent(sourceFile, targetFile, bytesCopied, bytesLeft);
 			}
 		}
+	}
+
+	protected void fireFileCopierEvent(File sourceFile, File targetFile, long bytesCopied, long bytesLeft) {
+		this.listeners.forEach(listener -> {
+			try {
+				listener.fileCopyStepDetected(new FileCopierEvent() //
+						.setAbsoluteSourcePathName(sourceFile.getAbsolutePath()) //
+						.setAbsoluteTargetPathName(targetFile.getAbsolutePath()) //
+						.setBytesCopied(bytesCopied) //
+						.setBytesLeft(bytesLeft) //
+				);
+			} catch (Exception e) {
+				throw new RuntimeException("error occured while calling file found listener: " + e.getMessage() // NOSONAR
+						+ ", exception type: " + e.getClass().getName());
+			}
+		});
 	}
 
 }

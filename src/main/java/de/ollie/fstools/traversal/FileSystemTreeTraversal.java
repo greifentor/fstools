@@ -36,6 +36,7 @@ public class FileSystemTreeTraversal {
 	 * Adds the passed directory found listener to the listeners which are observing the traversal.
 	 * 
 	 * @param listener The new listener to add.
+	 * @throws IllegalArgumentException Passing a null value.
 	 */
 	public void addDirectoryFoundListener(DirectoryFoundListener listener) {
 		ensure(listener != null, "listener cannot be null.");
