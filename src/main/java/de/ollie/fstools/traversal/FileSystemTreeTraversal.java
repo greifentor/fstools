@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class FileSystemTreeTraversal {
 	protected void fireDirectoryFoundEvent(File file) {
 		this.directoryFoundListeners.forEach(listener -> {
 			try {
-				listener.directoryFound(new DirectoryFoundEvent().setPath(Path.of(file.getAbsolutePath())));
+				listener.directoryFound(new DirectoryFoundEvent().setPath(Paths.get(file.getAbsolutePath())));
 			} catch (Exception e) {
 				throw new RuntimeException("error occured while calling directory found listener: " + e.getMessage() // NOSONAR
 						+ ", exception type: " + e.getClass().getName());
@@ -67,7 +68,7 @@ public class FileSystemTreeTraversal {
 	protected void fireFileFoundEvent(File file) {
 		this.fileFoundListeners.forEach(listener -> {
 			try {
-				listener.fileFound(new FileFoundEvent().setPath(Path.of(file.getAbsolutePath())));
+				listener.fileFound(new FileFoundEvent().setPath(Paths.get(file.getAbsolutePath())));
 			} catch (Exception e) {
 				throw new RuntimeException("error occured while calling file found listener: " + e.getMessage() // NOSONAR
 						+ ", exception type: " + e.getClass().getName());
@@ -94,7 +95,7 @@ public class FileSystemTreeTraversal {
 	}
 
 	private void traverse(File file) throws IOException {
-		if (!Files.isSymbolicLink(Path.of(file.getAbsolutePath()))) {
+		if (!Files.isSymbolicLink(Paths.get(file.getAbsolutePath()))) {
 			ensure(file.exists(), new FileNotFoundException("file does not exists: " + file.getAbsolutePath()));
 			if (file.isFile()) {
 				fireFileFoundEvent(file);

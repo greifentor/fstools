@@ -1,6 +1,7 @@
 package de.ollie.fstools.copier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,8 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import static org.hamcrest.Matchers.equalTo;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -64,11 +64,11 @@ public class FileCopierTest {
 			String targetPath = tempDir + "/copiedFile.txt";
 			File sourceFile = new File(sourcePath);
 			File targetFile = new File(targetPath);
-			String sourceContent = Files.readString(Path.of(sourcePath));
+			String sourceContent = new String(Files.readAllBytes(Paths.get(sourcePath)));
 			// Run
 			unitUnderTest.copy(sourceFile, targetFile);
 			// Check
-			String targetContent = Files.readString(Path.of(targetPath));
+			String targetContent = new String(Files.readAllBytes(Paths.get(targetPath)));
 			assertEquals(sourceContent, targetContent);
 		}
 
@@ -82,11 +82,11 @@ public class FileCopierTest {
 			String targetPath = tempDir + "/copiedFile.txt";
 			File sourceFile = new File(sourcePath);
 			File targetFile = new File(targetPath);
-			String sourceContent = Files.readString(Path.of(sourcePath));
+			String sourceContent = new String(Files.readAllBytes(Paths.get(sourcePath)));
 			// Run
 			unitUnderTest.copy(sourceFile, targetFile);
 			// Check
-			String targetContent = Files.readString(Path.of(targetPath));
+			String targetContent = new String(Files.readAllBytes(Paths.get(targetPath)));
 			assertEquals(sourceContent, targetContent);
 		}
 
@@ -100,7 +100,7 @@ public class FileCopierTest {
 			File sourceFile = new File(sourcePath);
 			File targetFile = new File(targetPath);
 			unitUnderTest.addFileCopierListener(event -> {
-				assertTrue(event.getAbsoluteSourcePathName().endsWith(sourcePath));
+				assertTrue(event.getAbsoluteSourcePathName().replace("\\", "/").endsWith(sourcePath));
 				assertEquals(sourceFile.length(), event.getBytesCopied());
 				assertEquals(0L, event.getBytesLeft());
 			});

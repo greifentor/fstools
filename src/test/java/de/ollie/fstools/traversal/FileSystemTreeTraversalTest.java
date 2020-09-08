@@ -1,12 +1,12 @@
 package de.ollie.fstools.traversal;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.FileNotFoundException;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-
-import static org.hamcrest.Matchers.equalTo;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,7 +24,7 @@ import de.ollie.fstools.Counter;
 @ExtendWith(MockitoExtension.class)
 public class FileSystemTreeTraversalTest {
 
-	private static final Path PATH = Path.of("/");
+	private static final Path PATH = Paths.get("/");
 
 	private FileSystemTreeTraversal unitUnderTest;
 
@@ -82,8 +82,8 @@ public class FileSystemTreeTraversalTest {
 		@DisplayName("Throws an exception if the working path is not existing.")
 		@Test
 		void workingPathIsNotExisting_ThrowsAnException() {
-			assertThrows(FileNotFoundException.class,
-					() -> new FileSystemTreeTraversal(Path.of("@:NotExisting")).traverse());
+			assertThrows(InvalidPathException.class,
+					() -> new FileSystemTreeTraversal(Paths.get("@:NotExisting")).traverse());
 		}
 
 		@DisplayName("Throws an exception if some thing goes wrong while calling the file found listener.")
@@ -91,7 +91,7 @@ public class FileSystemTreeTraversalTest {
 		void somethingGoesWrongWhileCallingTheFileFoundListener_ThrowsAnException() throws Exception {
 			// Prepare
 			RuntimeException exception = new RuntimeException();
-			unitUnderTest = new FileSystemTreeTraversal(Path.of("src", "test", "resources", "testfolder"));
+			unitUnderTest = new FileSystemTreeTraversal(Paths.get("src", "test", "resources", "testfolder"));
 			unitUnderTest.addFileFoundListener(event -> {
 				throw exception;
 			});
@@ -104,12 +104,12 @@ public class FileSystemTreeTraversalTest {
 		void workingPathIsExisting_FiresAFileFoundEventForAnyFileFound() throws Exception {
 			// Prepare
 			Counter count = new Counter();
-			unitUnderTest = new FileSystemTreeTraversal(Path.of("src", "test", "resources", "testfolder"));
+			unitUnderTest = new FileSystemTreeTraversal(Paths.get("src", "test", "resources", "testfolder"));
 			unitUnderTest.addFileFoundListener(event -> count.inc());
 			// Run
 			unitUnderTest.traverse();
 			// Check
-			assertThat(count.getCount(), equalTo(2));
+			assertThat(count.getCount(), equalTo(4));
 		}
 
 		@DisplayName("Throws an exception if some thing goes wrong while calling the directory found listener.")
@@ -117,7 +117,7 @@ public class FileSystemTreeTraversalTest {
 		void somethingGoesWrongWhileCallingTheDirectoryFoundListener_ThrowsAnException() throws Exception {
 			// Prepare
 			RuntimeException exception = new RuntimeException();
-			unitUnderTest = new FileSystemTreeTraversal(Path.of("src", "test", "resources", "testfolder"));
+			unitUnderTest = new FileSystemTreeTraversal(Paths.get("src", "test", "resources", "testfolder"));
 			unitUnderTest.addDirectoryFoundListener(event -> {
 				throw exception;
 			});
@@ -130,12 +130,12 @@ public class FileSystemTreeTraversalTest {
 		void workingPathIsExisting_FiresADirectoryFoundEventForAnyDirectoryFound() throws Exception {
 			// Prepare
 			Counter count = new Counter();
-			unitUnderTest = new FileSystemTreeTraversal(Path.of("src", "test", "resources", "testfolder"));
+			unitUnderTest = new FileSystemTreeTraversal(Paths.get("src", "test", "resources", "testfolder"));
 			unitUnderTest.addDirectoryFoundListener(event -> count.inc());
 			// Run
 			unitUnderTest.traverse();
 			// Check
-			assertThat(count.getCount(), equalTo(3));
+			assertThat(count.getCount(), equalTo(2));
 		}
 
 	}
