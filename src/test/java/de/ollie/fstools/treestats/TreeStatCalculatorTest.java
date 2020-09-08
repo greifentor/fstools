@@ -1,6 +1,7 @@
 package de.ollie.fstools.treestats;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import static org.hamcrest.Matchers.equalTo;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,11 +63,11 @@ public class TreeStatCalculatorTest {
 		void passAValidPath_ReturnsTheCorrectTreeStatsObject() throws Exception {
 			// Prepare
 			TreeStats expected = new TreeStats() //
-					.setFileCount(2) //
-					.setFolderCount(3) //
-					.setSize(15);
+					.setFileCount(4) //
+					.setFolderCount(2) //
+					.setSize(36);
 			// Run
-			TreeStats returned = unitUnderTest.calculate(Path.of("src", "test", "resources", "testfolder"));
+			TreeStats returned = unitUnderTest.calculate(Paths.get("src", "test", "resources", "testfolder"));
 			// Check
 			assertThat(returned, equalTo(expected));
 		}
@@ -98,9 +100,9 @@ public class TreeStatCalculatorTest {
 			// Check
 			verify(outStream, times(2)).println();
 			verify(outStream, times(1)).println("Statistic information for: " + path);
-			verify(outStream, times(1)).println("Folders: " + 3);
-			verify(outStream, times(1)).println("Files:   " + 2);
-			verify(outStream, times(1)).println("Size:    " + 15);
+			verify(outStream, times(1)).println("Folders: " + 2);
+			verify(outStream, times(1)).println("Files:   " + 4);
+			verify(outStream, times(1)).println("Size:    " + 36);
 		}
 
 	}

@@ -5,6 +5,7 @@ import static de.ollie.utils.Check.ensure;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import de.ollie.fstools.traversal.FileSystemTreeTraversal;
 
@@ -26,10 +27,10 @@ public class TreeStatCalculator {
 	public static void main(String[] args) throws Exception {
 		ensure(args != null, "arguments cannot be null.");
 		ensure(args.length > 0, "not enough arguments.");
-		Path path = Path.of(args[0]);
+		Path path = Paths.get(args[0]);
 		TreeStats stats = new TreeStatCalculator().calculate(path);
 		out.println();
-		out.println("Statistic information for: " + path.toString());
+		out.println("Statistic information for: " + path.toString().replace("\\", "/"));
 		out.println("Folders: " + stats.getFolderCount());
 		out.println("Files:   " + stats.getFileCount());
 		out.println("Size:    " + stats.getSize());
