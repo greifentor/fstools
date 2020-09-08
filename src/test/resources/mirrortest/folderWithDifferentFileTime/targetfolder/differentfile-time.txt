@@ -1,1 +1,1 @@
-Another text file with a different size.
+Another text file with different modification time.
