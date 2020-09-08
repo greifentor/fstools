@@ -7,7 +7,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import static org.hamcrest.Matchers.equalTo;
 
@@ -103,4 +105,19 @@ public class TreeStatCalculatorTest {
 
 	}
 
+	@Nested
+	class TestFileStats {
+
+		@Test
+		void test() throws Exception {
+			Path path = Path.of("pom.xml");
+			BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+			System.out.printf("fileName         = %s%n", path.toAbsolutePath().toString());
+			System.out.printf("creationTime     = %s%n", attributes.creationTime());
+			System.out.printf("lastAccessTime   = %s%n", attributes.lastAccessTime());
+			System.out.printf("lastModifiedTime = %s%n", attributes.lastModifiedTime());
+			System.out.printf("size             = %s%n", attributes.size());
+			System.out.printf("directory        = %s%n", attributes.isDirectory());
+		}
+	}
 }
