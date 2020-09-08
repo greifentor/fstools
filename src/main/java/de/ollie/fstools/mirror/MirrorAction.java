@@ -20,6 +20,13 @@ public class MirrorAction {
 		REMOVE
 	}
 
+	public enum DifferenceType {
+		EXISTENCE, //
+		SIZE, //
+		TIME
+	}
+
+	private DifferenceType differenceType;
 	private String sourceFileName;
 	private String targetFileName;
 	private ActionType type;

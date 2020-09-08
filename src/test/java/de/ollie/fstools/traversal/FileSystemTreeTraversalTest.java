@@ -1,12 +1,13 @@
 package de.ollie.fstools.traversal;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.nio.file.InvalidPathException;
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -82,8 +83,8 @@ public class FileSystemTreeTraversalTest {
 		@DisplayName("Throws an exception if the working path is not existing.")
 		@Test
 		void workingPathIsNotExisting_ThrowsAnException() {
-			assertThrows(InvalidPathException.class,
-					() -> new FileSystemTreeTraversal(Paths.get("@:NotExisting")).traverse());
+			assertThrows(FileNotFoundException.class,
+					() -> new FileSystemTreeTraversal(Paths.get("/NotExisting")).traverse());
 		}
 
 		@DisplayName("Throws an exception if some thing goes wrong while calling the file found listener.")
@@ -109,7 +110,7 @@ public class FileSystemTreeTraversalTest {
 			// Run
 			unitUnderTest.traverse();
 			// Check
-			assertThat(count.getCount(), equalTo(4));
+			assertThat(count.getCount(), equalTo(3));
 		}
 
 		@DisplayName("Throws an exception if some thing goes wrong while calling the directory found listener.")
@@ -135,7 +136,7 @@ public class FileSystemTreeTraversalTest {
 			// Run
 			unitUnderTest.traverse();
 			// Check
-			assertThat(count.getCount(), equalTo(2));
+			assertThat(count.getCount(), equalTo(3));
 		}
 
 	}

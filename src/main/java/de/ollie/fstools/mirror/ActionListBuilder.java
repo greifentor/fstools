@@ -5,12 +5,14 @@ import static de.ollie.utils.Check.ensure;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import de.ollie.fstools.filestats.FileStats;
 import de.ollie.fstools.filestats.FileStats.FileType;
 import de.ollie.fstools.filestats.FileStatsReader;
 import de.ollie.fstools.mirror.MirrorAction.ActionType;
+import de.ollie.fstools.mirror.MirrorAction.DifferenceType;
 
 /**
  * A class which is able to compare to folder (including sub folders) and create a list of actions to equalize the
@@ -48,16 +50,17 @@ public class ActionListBuilder {
 			throws IOException {
 		sourceFolderName = completePath(sourceFolderName);
 		targetFolderName = completePath(targetFolderName);
-		String[] sourceFileNames = new File(sourceFolderName).list();
-		String[] targetFileNames = new File(targetFolderName).list();
+		List<String> sourceFileNames = getFileNameList(sourceFolderName);
+		List<String> targetFileNames = getFileNameList(targetFolderName);
 		for (String fileName : sourceFileNames) {
 			FileStats sourceFileStats = getFileStats(sourceFolderName + fileName);
 			if (sourceFileStats.getType() == FileType.DIRECTORY) {
-				fillMirrorActions(actions, sourceFolderName, targetFolderName);
+				fillMirrorActions(actions, sourceFolderName + fileName, targetFolderName + fileName);
 			} else if (sourceFileStats.getType() == FileType.FILE) {
 				FileStats targetFileStats = getFileStats(targetFolderName + fileName);
 				if (isFileToCopy(sourceFileStats, targetFileStats)) {
 					actions.add(new MirrorAction() //
+							.setDifferenceType(getDifferenceTypeOfFileToCopy(sourceFileStats, targetFileStats)) //
 							.setSourceFileName(sourceFileStats.getName()) //
 							.setTargetFileName(targetFileStats != null //
 									? targetFileStats.getName() //
@@ -67,22 +70,28 @@ public class ActionListBuilder {
 				}
 			}
 		}
-		if (targetFileNames != null) {
-			for (String fileName : targetFileNames) {
-				FileStats sourceFileStats = getFileStats(sourceFolderName + fileName);
-				FileStats targetFileStats = getFileStats(targetFolderName + fileName);
-				if (doesNotExistInSource(sourceFileStats)) {
-					actions.add(new MirrorAction() //
-							.setTargetFileName(targetFileStats != null ? targetFileStats.getName() : null) //
-							.setType(ActionType.REMOVE) //
-					);
-				}
+		for (String fileName : targetFileNames) {
+			FileStats sourceFileStats = getFileStats(sourceFolderName + fileName);
+			FileStats targetFileStats = getFileStats(targetFolderName + fileName);
+			if (doesNotExistInSource(sourceFileStats)) {
+				actions.add(new MirrorAction() //
+						.setTargetFileName(targetFileStats != null ? targetFileStats.getName() : null) //
+						.setType(ActionType.REMOVE) //
+				);
 			}
 		}
 	}
 
 	private String completePath(String pn) {
 		return pn != null && !pn.endsWith("//") ? pn.concat("/") : pn;
+	}
+
+	private List<String> getFileNameList(String path) {
+		String[] fileNames = new File(path).list();
+		if (fileNames == null) {
+			return new ArrayList<>();
+		}
+		return Arrays.asList(fileNames);
 	}
 
 	private FileStats getFileStats(String fileName) throws IOException {
@@ -99,8 +108,30 @@ public class ActionListBuilder {
 				|| (sourceFileStats.getSize() != targetFileStats.getSize());
 	}
 
+	private DifferenceType getDifferenceTypeOfFileToCopy(FileStats sourceFileStats, FileStats targetFileStats) {
+		if (targetFileStats == null) {
+			return DifferenceType.EXISTENCE;
+		} else if (sourceFileStats.getSize() != targetFileStats.getSize()) {
+			return DifferenceType.SIZE;
+		} else if (sourceFileStats.getLastModifiedTime().isAfter(targetFileStats.getLastModifiedTime())) {
+			return DifferenceType.TIME;
+		}
+		return null;
+	}
+
 	private boolean doesNotExistInSource(FileStats sourceFileStats) {
 		return sourceFileStats == null;
+	}
+
+	public static void main(String[] args) {
+		ActionListBuilder builder = new ActionListBuilder();
+		try {
+			builder.build(args[0], args[1]) //
+					.forEach(System.out::println);
+			;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

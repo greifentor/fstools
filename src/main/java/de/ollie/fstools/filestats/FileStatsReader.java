@@ -43,7 +43,7 @@ public class FileStatsReader {
 	}
 
 	private LocalDateTime fromFileTime(FileTime fileTime) {
-		Instant instant = Instant.ofEpochMilli(fileTime.toMillis());
+		Instant instant = Instant.ofEpochMilli((fileTime.toMillis() / 1000) * 1000);
 		return instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
 	}
 
