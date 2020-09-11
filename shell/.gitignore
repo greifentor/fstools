@@ -1,3 +1,4 @@
 /target/
 /.classpath
 /.project
+/spring-shell.log
