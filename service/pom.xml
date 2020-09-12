@@ -11,25 +11,20 @@
 		<version>${global.version}</version>
 	</parent>
 
-	<artifactId>fstools-shell</artifactId>
+	<artifactId>fstools-service</artifactId>
 	<version>${global.version}</version>
 	<packaging>jar</packaging>
 
-	<name>fstools-shell</name>
+	<name>fstools-service</name>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.shell</groupId>
-			<artifactId>spring-shell-starter</artifactId>
-			<version>2.0.0.RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>de.ollie</groupId>
-			<artifactId>fstools-service</artifactId>
+			<artifactId>fstools-core-lib</artifactId>
 			<version>${global.version}</version>
 		</dependency>
 	</dependencies>
@@ -41,20 +36,6 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
-		<plugins>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<forkCount>3</forkCount>
-					<reuseForks>true</reuseForks>
-					<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
 	</build>
 
 </project>

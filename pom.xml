@@ -81,6 +81,7 @@
 	</build>
 	<modules>
 		<module>core-lib</module>
+		<module>service</module>
 		<module>shell</module>
 	</modules>
 	<dependencies>
