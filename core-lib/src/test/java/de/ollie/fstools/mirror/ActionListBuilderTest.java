@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.ollie.fstools.mirror.MirrorAction.ActionType;
 import de.ollie.fstools.mirror.MirrorAction.DifferenceType;
+import de.ollie.fstools.mirror.filters.ExclusionContainedInFileNameExcludeActionFilter;
 
 @ExtendWith(MockitoExtension.class)
 public class ActionListBuilderTest {
@@ -40,13 +41,19 @@ public class ActionListBuilderTest {
 		@DisplayName("Throws an exception if a null value as source folder name is passed.")
 		@Test
 		void nullAsSourceFolderNamePassed_ThrowsAnException() {
-			assertThrows(NullPointerException.class, () -> unitUnderTest.build(null, "src"));
+			assertThrows(NullPointerException.class, () -> unitUnderTest.build(null, "src", new ArrayList<>()));
 		}
 
 		@DisplayName("Throws an exception if a null value as target folder name is passed.")
 		@Test
 		void nullAsTargetFolderNamePassed_ThrowsAnException() {
-			assertThrows(NullPointerException.class, () -> unitUnderTest.build("src", null));
+			assertThrows(NullPointerException.class, () -> unitUnderTest.build("src", null, new ArrayList<>()));
+		}
+
+		@DisplayName("Throws an exception if a null value as additional copy filters is passed.")
+		@Test
+		void nullAsAdditionalCopyFiltersPassed_ThrowsAnException() {
+			assertThrows(NullPointerException.class, () -> unitUnderTest.build("src", "src", null));
 		}
 
 		@DisplayName("Returns an empty list for equal folders.")
@@ -60,7 +67,8 @@ public class ActionListBuilderTest {
 			Path targetFile = Paths.get(PREFIX + folderName + TARGET_FOLDER);
 			List<MirrorAction> expected = new ArrayList<>();
 			// Run
-			List<MirrorAction> returned = unitUnderTest.build(sourceFile.toString(), targetFile.toString());
+			List<MirrorAction> returned = unitUnderTest.build(sourceFile.toString(), targetFile.toString(),
+					new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -81,7 +89,7 @@ public class ActionListBuilderTest {
 			);
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER);
+					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -104,7 +112,7 @@ public class ActionListBuilderTest {
 			);
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER);
+					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -127,7 +135,7 @@ public class ActionListBuilderTest {
 			);
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER);
+					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -145,7 +153,7 @@ public class ActionListBuilderTest {
 			List<MirrorAction> expected = new ArrayList<>();
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER);
+					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -165,7 +173,24 @@ public class ActionListBuilderTest {
 			);
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER);
+					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
+			// Check
+			assertEquals(expected, returned);
+		}
+
+		@DisplayName("Returns a list of actions for a target folder respecting the additional copy filter.")
+		@Test
+		void calledWithAnAdditionalCopyFilter_ReturnsAListOfActions() throws Exception {
+			// Prepare
+			String folderName = "excludeByCopyFilter";
+			new File(PREFIX + folderName + SOURCE_FOLDER + "/afile.txt").setLastModified(DATE);
+			new File(PREFIX + folderName + TARGET_FOLDER + "/afile.txt").setLastModified(DATE);
+			new File(PREFIX + folderName + TARGET_FOLDER + "/file-to-exclude.txt").setLastModified(DATE);
+			List<MirrorAction> expected = Arrays.asList();
+			// Run
+			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
+					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>(),
+					new ExclusionContainedInFileNameExcludeActionFilter("to-exc"));
 			// Check
 			assertEquals(expected, returned);
 		}
