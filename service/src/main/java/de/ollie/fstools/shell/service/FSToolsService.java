@@ -38,4 +38,12 @@ public interface FSToolsService {
 	 */
 	FileStats getFileStats(String pathName) throws IOException;
 
+	/**
+	 * Processes the passed mirror actions.
+	 * 
+	 * @param mirrorActions The mirror actions to process.
+	 * @throws IOException If an error occurs while processing the mirror actions.
+	 */
+	void processMirrorActions(List<MirrorActionSO> actions) throws IOException;
+
 }

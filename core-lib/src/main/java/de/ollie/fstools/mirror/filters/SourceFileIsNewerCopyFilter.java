@@ -8,7 +8,7 @@ import de.ollie.fstools.mirror.CopyFilter;
  *
  * @author ollie (14.09.2020)
  */
-public class SourceFileIsNewerCopyFilter implements CopyFilter {
+public class SourceFileIsNewerCopyFilter extends BaseFilter implements CopyFilter {
 
 	@Override
 	public boolean isToCopy(FileStats sourceFileStats, FileStats targetFileStats) {

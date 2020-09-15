@@ -8,7 +8,7 @@ import de.ollie.fstools.mirror.MirrorAction;
  *
  * @author ollie (14.09.2020)
  */
-public class ExclusionContainedInFileNameExcludeActionFilter implements ExcludeActionFilter {
+public class ExclusionContainedInFileNameExcludeActionFilter extends BaseFilter implements ExcludeActionFilter {
 
 	private String fileNameFragment;
 

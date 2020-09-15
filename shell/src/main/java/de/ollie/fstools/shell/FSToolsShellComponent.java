@@ -32,14 +32,18 @@ public class FSToolsShellComponent {
 	public String cmp(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes,
 			@ShellOption(defaultValue = "") String copyAtAnyTime) {
 		try {
-			List<String> excludePatterns = getListFromCommaSeparatedString(excludes);
-			List<String> copyAtAnyTimePatterns = getListFromCommaSeparatedString(copyAtAnyTime);
-			List<MirrorActionSO> actions = fsToolsService.buildActionList(sourcePathName, targetPathName,
-					excludePatterns, copyAtAnyTimePatterns);
-			return mirrorActionSOsToStringTable(actions);
+			return mirrorActionSOsToStringTable(
+					loadMirrorActions(sourcePathName, targetPathName, excludes, copyAtAnyTime));
 		} catch (Exception e) {
 			return "error: " + e.getMessage();
 		}
+	}
+
+	private List<MirrorActionSO> loadMirrorActions(String sourcePathName, String targetPathName, String excludes,
+			String copyAtAnyTime) throws IOException {
+		List<String> excludePatterns = getListFromCommaSeparatedString(excludes);
+		List<String> copyAtAnyTimePatterns = getListFromCommaSeparatedString(copyAtAnyTime);
+		return fsToolsService.buildActionList(sourcePathName, targetPathName, excludePatterns, copyAtAnyTimePatterns);
 	}
 
 	private List<String> getListFromCommaSeparatedString(String s) {
@@ -103,6 +107,19 @@ public class FSToolsShellComponent {
 					fileStats.getName()));
 		}
 		return sb.toString();
+	}
+
+	@ShellMethod("Mirrors source path to the target path.")
+	public String mirror(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes,
+			@ShellOption(defaultValue = "") String copyAtAnyTime) {
+		try {
+			List<MirrorActionSO> actions = loadMirrorActions(sourcePathName, targetPathName, excludes, copyAtAnyTime);
+			fsToolsService.processMirrorActions(actions);
+			return "done";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "error: " + e.getMessage();
+		}
 	}
 
 }

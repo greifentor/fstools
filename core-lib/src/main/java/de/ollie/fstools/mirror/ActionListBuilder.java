@@ -122,7 +122,7 @@ public class ActionListBuilder {
 			ExcludeActionFilter... excludeActionFilters) {
 		return actions //
 				.stream() //
-				.dropWhile(mirrorAction -> isToExclude(mirrorAction, excludeActionFilters)) //
+				.filter(mirrorAction -> !isToExclude(mirrorAction, excludeActionFilters)) //
 				.collect(Collectors.toList()) //
 		;
 	}

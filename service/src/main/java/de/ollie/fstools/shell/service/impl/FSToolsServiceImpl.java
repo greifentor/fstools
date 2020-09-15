@@ -11,8 +11,12 @@ import de.ollie.fstools.filestats.FileStatsReader;
 import de.ollie.fstools.mirror.ActionListBuilder;
 import de.ollie.fstools.mirror.CopyFilter;
 import de.ollie.fstools.mirror.ExcludeActionFilter;
+import de.ollie.fstools.mirror.MirrorAction;
+import de.ollie.fstools.mirror.MirrorActionProcessor;
 import de.ollie.fstools.mirror.filters.CopyAtAnyTimeFileNamePatternCopyFilter;
+import de.ollie.fstools.mirror.filters.ExclusionContainedInFileNameExcludeActionFilter;
 import de.ollie.fstools.shell.service.FSToolsService;
+import de.ollie.fstools.shell.service.converter.MirrorActionFromMirrorActionSOConverter;
 import de.ollie.fstools.shell.service.converter.MirrorActionSOFromMirrorActionConverter;
 import de.ollie.fstools.shell.service.so.MirrorActionSO;
 
@@ -26,14 +30,20 @@ public class FSToolsServiceImpl implements FSToolsService {
 
 	private final ActionListBuilder actionListBuilder;
 	private final FileStatsReader fileStatsReader;
-	private final MirrorActionSOFromMirrorActionConverter mirrorActionConverter;
+	private final MirrorActionProcessor mirrorActionProcessor;
+	private final MirrorActionSOFromMirrorActionConverter mirrorActionSOFromModelConverter;
+	private final MirrorActionFromMirrorActionSOConverter mirrorActionFromSOConverter;
 
 	public FSToolsServiceImpl(ActionListBuilder actionListBuilder, FileStatsReader fileStatsReader,
-			MirrorActionSOFromMirrorActionConverter mirrorActionConverter) {
+			MirrorActionProcessor mirrorActionProcessor,
+			MirrorActionSOFromMirrorActionConverter mirrorActionSOFromModelConverter,
+			MirrorActionFromMirrorActionSOConverter mirrorActionFromSOConverter) {
 		super();
 		this.actionListBuilder = actionListBuilder;
 		this.fileStatsReader = fileStatsReader;
-		this.mirrorActionConverter = mirrorActionConverter;
+		this.mirrorActionProcessor = mirrorActionProcessor;
+		this.mirrorActionFromSOConverter = mirrorActionFromSOConverter;
+		this.mirrorActionSOFromModelConverter = mirrorActionSOFromModelConverter;
 	}
 
 	@Override
@@ -43,7 +53,7 @@ public class FSToolsServiceImpl implements FSToolsService {
 				.build(sourcePathName, targetPathName, getCopyFilters(copyAtAnyTimePatterns),
 						getExcludeActionFilters(excludePatterns)) //
 				.stream() //
-				.map(mirrorActionConverter::convert) //
+				.map(mirrorActionSOFromModelConverter::convert) //
 				.collect(Collectors.toList()) //
 		;
 	}
@@ -57,12 +67,27 @@ public class FSToolsServiceImpl implements FSToolsService {
 	}
 
 	private ExcludeActionFilter[] getExcludeActionFilters(List<String> excludePatterns) {
-		return new ExcludeActionFilter[0];
+		return excludePatterns //
+				.stream() //
+				.map(s -> new ExclusionContainedInFileNameExcludeActionFilter(s)) //
+				.collect(Collectors.toList()) //
+				.toArray(new ExclusionContainedInFileNameExcludeActionFilter[excludePatterns.size()]) //
+		;
 	}
 
 	@Override
 	public FileStats getFileStats(String path) throws IOException {
 		return fileStatsReader.read(path);
+	}
+
+	@Override
+	public void processMirrorActions(List<MirrorActionSO> actionsSO) throws IOException {
+		List<MirrorAction> actions = actionsSO //
+				.stream() //
+				.map(mirrorActionFromSOConverter::convert) //
+				.collect(Collectors.toList()) //
+		;
+		mirrorActionProcessor.processMirrorActions(actions);
 	}
 
 }
