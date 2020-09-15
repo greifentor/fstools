@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
 import de.ollie.fstools.filestats.FileStats.FileType;
 
 /**
@@ -21,6 +23,7 @@ import de.ollie.fstools.filestats.FileStats.FileType;
  * @author Oliver.Lieshoff (06.09.2020)
  *
  */
+@Component
 public class FileStatsReader {
 
 	/**

@@ -14,6 +14,22 @@ import de.ollie.fstools.shell.service.so.MirrorActionSO;
 public interface FSToolsService {
 
 	/**
+	 * Returns a list of actions which are necessary to change the target path with regards to content of the source
+	 * path.
+	 * 
+	 * @param sourcePathName        The source path.
+	 * @param targetPathName        The target path.
+	 * @param excludePatterns       A comma separated list of name patterns which are to exclude from copy process at
+	 *                              any time.
+	 * @param copyAtAnyTimePatterns A comma separated list of name patterns for files which are to copy at any process.
+	 * @return A list list of actions which are necessary to change the target path with regards to content of the
+	 *         source path or an empty list if both paths are of equal content.
+	 * @throws IOException If something gets wrong while reading the file information.
+	 */
+	List<MirrorActionSO> buildActionList(String sourcePathName, String targetPathName, List<String> excludePatterns,
+			List<String> copyAtAnyTimePatterns) throws IOException;
+
+	/**
 	 * Returns the information for the file with the passed path.
 	 * 
 	 * @param pathName The path of the file whose information are to return.
@@ -21,17 +37,5 @@ public interface FSToolsService {
 	 * @throws IOException In case of an error occurs while reading the file stats.
 	 */
 	FileStats getFileStats(String pathName) throws IOException;
-
-	/**
-	 * Returns a list of actions which are necessary to change the target path with regards to content of the source
-	 * path.
-	 * 
-	 * @param sourcePathName The source path.
-	 * @param targetPathName The target path.
-	 * @return A list list of actions which are necessary to change the target path with regards to content of the
-	 *         source path or an empty list if both paths are of equal content.
-	 * @throws IOException If something gets wrong while reading the file information.
-	 */
-	List<MirrorActionSO> buildActionList(String sourcePathName, String targetPathName) throws IOException;
 
 }

@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
 import de.ollie.fstools.filestats.FileStats;
 import de.ollie.fstools.filestats.FileStats.FileType;
 import de.ollie.fstools.filestats.FileStatsReader;
@@ -25,6 +27,7 @@ import de.ollie.fstools.mirror.filters.TargetDoesNotExistsCopyFilter;
  * @author Oliver.Lieshoff (06.09.2020)
  *
  */
+@Component
 public class ActionListBuilder {
 
 	private static List<CopyFilter> basicCopyFilters = new ArrayList<>(Arrays.asList( //
@@ -43,20 +46,20 @@ public class ActionListBuilder {
 	 * * File existing in both folder but is more recent in the source folder causes a COPY action. <BR>
 	 * * File existing in the target folder only, causes a REMOVE action.
 	 * 
-	 * @param sourceFolderName      The name of the source folder.
-	 * @param targetFolderName      The name of the target folder.
+	 * @param sourcePathName        The name of the source path.
+	 * @param targetPathName        The name of the target path.
 	 * @param additionalCopyFilters Additional copy filters, if necessary.
 	 * @param excludeActionFilters  Filters to exclude mirror actions.
 	 * @return A list of action to equalize the passed target folder to the passed source folder.
 	 * @throws IOException If an error occurs while building up the list.
 	 */
-	public List<MirrorAction> build(String sourceFolderName, String targetFolderName,
+	public List<MirrorAction> build(String sourcePathName, String targetPathName,
 			List<CopyFilter> additionalCopyFilters, ExcludeActionFilter... excludeActionFilters) throws IOException {
-		ensure(sourceFolderName != null, new NullPointerException("source folder name cannot be null."));
-		ensure(targetFolderName != null, new NullPointerException("target folder name cannot be null."));
+		ensure(sourcePathName != null, new NullPointerException("source path name cannot be null."));
+		ensure(targetPathName != null, new NullPointerException("target path name cannot be null."));
 		ensure(additionalCopyFilters != null, new NullPointerException("additional copy filters cannot be null."));
 		List<MirrorAction> actions = new ArrayList<>();
-		return fillMirrorActions(actions, sourceFolderName, targetFolderName, getCopyFilters(additionalCopyFilters),
+		return fillMirrorActions(actions, sourcePathName, targetPathName, getCopyFilters(additionalCopyFilters),
 				excludeActionFilters);
 	}
 

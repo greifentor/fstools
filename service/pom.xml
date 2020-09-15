@@ -12,15 +12,14 @@
 	</parent>
 
 	<artifactId>fstools-service</artifactId>
-	<version>${global.version}</version>
 	<packaging>jar</packaging>
 
 	<name>fstools-service</name>
 
 	<dependencies>
 		<dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>de.ollie</groupId>

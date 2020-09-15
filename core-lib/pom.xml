@@ -5,16 +5,26 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
+	<parent>
 		<groupId>de.ollie</groupId>
 		<artifactId>fstools</artifactId>
 		<version>${global.version}</version>
 	</parent>
 
-	<groupId>de.ollie</groupId>
 	<artifactId>fstools-core-lib</artifactId>
-	<version>${global.version}</version>
+	<packaging>jar</packaging>
 
 	<name>fstools-core-lib</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+	</dependencies>
 
 </project>

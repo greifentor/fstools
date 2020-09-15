@@ -2,8 +2,11 @@ package de.ollie.fstools.shell;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -26,13 +29,25 @@ public class FSToolsShellComponent {
 	private FSToolsService fsToolsService;
 
 	@ShellMethod("Shows a list of necessary actions to fit the content of the target path to that of the source path.")
-	public String cmp(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes) {
+	public String cmp(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes,
+			@ShellOption(defaultValue = "") String copyAtAnyTime) {
 		try {
-			List<MirrorActionSO> actions = fsToolsService.buildActionList(sourcePathName, targetPathName);
+			List<String> excludePatterns = getListFromCommaSeparatedString(excludes);
+			List<String> copyAtAnyTimePatterns = getListFromCommaSeparatedString(copyAtAnyTime);
+			List<MirrorActionSO> actions = fsToolsService.buildActionList(sourcePathName, targetPathName,
+					excludePatterns, copyAtAnyTimePatterns);
 			return mirrorActionSOsToStringTable(actions);
 		} catch (Exception e) {
 			return "error: " + e.getMessage();
 		}
+	}
+
+	private List<String> getListFromCommaSeparatedString(String s) {
+		String[] a = StringUtils.split(s, ",");
+		if (a == null) {
+			return new ArrayList<>();
+		}
+		return Arrays.asList(a);
 	}
 
 	private String mirrorActionSOsToStringTable(List<MirrorActionSO> actions) {
