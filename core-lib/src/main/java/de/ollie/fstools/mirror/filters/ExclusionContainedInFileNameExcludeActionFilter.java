@@ -19,7 +19,7 @@ public class ExclusionContainedInFileNameExcludeActionFilter extends BaseFilter 
 
 	@Override
 	public boolean isToExclude(MirrorAction mirrorAction) {
-		return mirrorAction.getSourceFileName().toLowerCase().contains(fileNameFragment);
+		return mirrorAction.getTargetFileName().toLowerCase().contains(fileNameFragment);
 	}
 
 }

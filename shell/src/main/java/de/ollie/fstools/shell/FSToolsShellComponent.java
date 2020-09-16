@@ -13,7 +13,11 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
 import de.ollie.fstools.filestats.FileStats;
+import de.ollie.fstools.shell.service.BuildActionListEvent;
+import de.ollie.fstools.shell.service.BuildActionListObserver;
 import de.ollie.fstools.shell.service.FSToolsService;
+import de.ollie.fstools.shell.service.ProcessMirrorActionsEvent;
+import de.ollie.fstools.shell.service.ProcessMirrorActionsObserver;
 import de.ollie.fstools.shell.service.so.MirrorActionSO;
 import de.ollie.fstools.shell.service.so.MirrorActionSO.ActionTypeSO;
 
@@ -35,6 +39,7 @@ public class FSToolsShellComponent {
 			return mirrorActionSOsToStringTable(
 					loadMirrorActions(sourcePathName, targetPathName, excludes, copyAtAnyTime));
 		} catch (Exception e) {
+			e.printStackTrace();
 			return "error: " + e.getMessage();
 		}
 	}
@@ -43,7 +48,29 @@ public class FSToolsShellComponent {
 			String copyAtAnyTime) throws IOException {
 		List<String> excludePatterns = getListFromCommaSeparatedString(excludes);
 		List<String> copyAtAnyTimePatterns = getListFromCommaSeparatedString(copyAtAnyTime);
-		return fsToolsService.buildActionList(sourcePathName, targetPathName, excludePatterns, copyAtAnyTimePatterns);
+		Counter countFiles = new Counter();
+		Counter countFolders = new Counter();
+		String format = "folder: %-6d, files: %-6d";
+		System.out.print(String.format(format, countFolders.getCount(), countFiles.inc().getCount()));
+		BuildActionListObserver observer = new BuildActionListObserver() {
+
+			@Override
+			public void fileDetected(BuildActionListEvent event) {
+				System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+				System.out.print(String.format(format, countFolders.getCount(), countFiles.inc().getCount()));
+			}
+
+			@Override
+			public void folderDetected(BuildActionListEvent event) {
+				System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+				System.out.print(String.format(format, countFolders.inc().getCount(), countFiles.getCount()));
+			}
+
+		};
+		List<MirrorActionSO> actions = fsToolsService.buildActionList(sourcePathName, targetPathName, observer,
+				excludePatterns, copyAtAnyTimePatterns);
+		System.out.println();
+		return actions;
 	}
 
 	private List<String> getListFromCommaSeparatedString(String s) {
@@ -56,15 +83,18 @@ public class FSToolsShellComponent {
 
 	private String mirrorActionSOsToStringTable(List<MirrorActionSO> actions) {
 		StringBuilder sb = new StringBuilder();
+		long totalSize = 0;
 		for (MirrorActionSO action : actions) {
 			if (action.getType() == ActionTypeSO.COPY) {
 				sb.append(String.format("%-8s %s -> %s%n", String.valueOf(action.getType()), action.getSourceFileName(),
 						action.getTargetFileName()));
+				totalSize += action.getSourceFileSizeInBytes();
 			}
 			if (action.getType() == ActionTypeSO.REMOVE) {
 				sb.append(String.format("%-8s %s%n", String.valueOf(action.getType()), action.getTargetFileName()));
 			}
 		}
+		sb.append("total (bytes): " + totalSize);
 		return sb.toString();
 	}
 
@@ -113,13 +143,50 @@ public class FSToolsShellComponent {
 	public String mirror(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes,
 			@ShellOption(defaultValue = "") String copyAtAnyTime) {
 		try {
+			Counter actionCount = new Counter();
+			Counter copied = new Counter();
+			Counter removed = new Counter();
 			List<MirrorActionSO> actions = loadMirrorActions(sourcePathName, targetPathName, excludes, copyAtAnyTime);
-			fsToolsService.processMirrorActions(actions);
-			return "done";
+			ProcessMirrorActionsObserver observer = new ProcessMirrorActionsObserver() {
+
+				@Override
+				public void copying(ProcessMirrorActionsEvent event) {
+					actionCount.inc();
+					System.out.print(getPercentileString(actions.size(), actionCount.getCount()) + "copying "
+							+ event.getSourceFileName() + " to " + event.getTargetFileName());
+				}
+
+				@Override
+				public void copied(ProcessMirrorActionsEvent event) {
+					System.out.println(" ok");
+					copied.inc();
+				}
+
+				@Override
+				public void removing(ProcessMirrorActionsEvent event) {
+					actionCount.inc();
+					System.out.print(getPercentileString(actions.size(), actionCount.getCount()) + "removing "
+							+ event.getTargetFileName());
+				}
+
+				@Override
+				public void removed(ProcessMirrorActionsEvent event) {
+					System.out.println(" ok");
+					removed.inc();
+				}
+
+			};
+			fsToolsService.processMirrorActions(actions, observer);
+			return "done (copied: " + copied.getCount() + ", removed: " + removed.getCount() + ")";
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "error: " + e.getMessage();
 		}
+	}
+
+	private String getPercentileString(int total, int count) {
+		double percentiles = ((double) count / (double) total) * 100;
+		return String.format("(% 6.2f) - ", percentiles);
 	}
 
 }

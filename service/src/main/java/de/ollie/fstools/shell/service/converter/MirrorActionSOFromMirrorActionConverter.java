@@ -22,6 +22,7 @@ public class MirrorActionSOFromMirrorActionConverter {
 		return new MirrorActionSO() //
 				.setDifferenceMessage(String.valueOf(model.getDifferenceType())) //
 				.setSourceFileName(model.getSourceFileName()) //
+				.setSourceFileSizeInBytes(model.getSourceFileSizeInBytes()) //
 				.setTargetFileName(model.getTargetFileName()) //
 				.setType(getTypeSO(model.getType())) //
 		;

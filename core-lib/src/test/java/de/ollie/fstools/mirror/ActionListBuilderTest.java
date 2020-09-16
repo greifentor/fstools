@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import de.ollie.fstools.Counter;
 import de.ollie.fstools.mirror.MirrorAction.ActionType;
 import de.ollie.fstools.mirror.MirrorAction.DifferenceType;
 import de.ollie.fstools.mirror.filters.ExclusionContainedInFileNameExcludeActionFilter;
@@ -41,19 +42,19 @@ public class ActionListBuilderTest {
 		@DisplayName("Throws an exception if a null value as source folder name is passed.")
 		@Test
 		void nullAsSourceFolderNamePassed_ThrowsAnException() {
-			assertThrows(NullPointerException.class, () -> unitUnderTest.build(null, "src", new ArrayList<>()));
+			assertThrows(NullPointerException.class, () -> unitUnderTest.build(null, "src", null, new ArrayList<>()));
 		}
 
 		@DisplayName("Throws an exception if a null value as target folder name is passed.")
 		@Test
 		void nullAsTargetFolderNamePassed_ThrowsAnException() {
-			assertThrows(NullPointerException.class, () -> unitUnderTest.build("src", null, new ArrayList<>()));
+			assertThrows(NullPointerException.class, () -> unitUnderTest.build("src", null, null, new ArrayList<>()));
 		}
 
 		@DisplayName("Throws an exception if a null value as additional copy filters is passed.")
 		@Test
 		void nullAsAdditionalCopyFiltersPassed_ThrowsAnException() {
-			assertThrows(NullPointerException.class, () -> unitUnderTest.build("src", "src", null));
+			assertThrows(NullPointerException.class, () -> unitUnderTest.build("src", "src", null, null));
 		}
 
 		@DisplayName("Returns an empty list for equal folders.")
@@ -67,7 +68,7 @@ public class ActionListBuilderTest {
 			Path targetFile = Paths.get(PREFIX + folderName + TARGET_FOLDER);
 			List<MirrorAction> expected = new ArrayList<>();
 			// Run
-			List<MirrorAction> returned = unitUnderTest.build(sourceFile.toString(), targetFile.toString(),
+			List<MirrorAction> returned = unitUnderTest.build(sourceFile.toString(), targetFile.toString(), null,
 					new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
@@ -84,12 +85,13 @@ public class ActionListBuilderTest {
 					new MirrorAction() //
 							.setDifferenceType(DifferenceType.EXISTENCE) //
 							.setSourceFileName(PREFIX + folderName + SOURCE_FOLDER + "/anotherfile.txt") //
+							.setSourceFileSizeInBytes(18) //
 							.setTargetFileName(PREFIX + folderName + TARGET_FOLDER + "/anotherfile.txt") //
 							.setType(ActionType.COPY) //
 			);
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
+					PREFIX + folderName + TARGET_FOLDER, null, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -107,12 +109,13 @@ public class ActionListBuilderTest {
 					new MirrorAction() //
 							.setDifferenceType(DifferenceType.SIZE) //
 							.setSourceFileName(PREFIX + folderName + SOURCE_FOLDER + "/differentfile-size.txt") //
+							.setSourceFileSizeInBytes(18) //
 							.setTargetFileName(PREFIX + folderName + TARGET_FOLDER + "/differentfile-size.txt") //
 							.setType(ActionType.COPY) //
 			);
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
+					PREFIX + folderName + TARGET_FOLDER, null, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -130,12 +133,13 @@ public class ActionListBuilderTest {
 					new MirrorAction() //
 							.setDifferenceType(DifferenceType.TIME) //
 							.setSourceFileName(PREFIX + folderName + SOURCE_FOLDER + "/differentfile-time.txt") //
+							.setSourceFileSizeInBytes(52) //
 							.setTargetFileName(PREFIX + folderName + TARGET_FOLDER + "/differentfile-time.txt") //
 							.setType(ActionType.COPY) //
 			);
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
+					PREFIX + folderName + TARGET_FOLDER, null, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -153,7 +157,7 @@ public class ActionListBuilderTest {
 			List<MirrorAction> expected = new ArrayList<>();
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
+					PREFIX + folderName + TARGET_FOLDER, null, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -173,7 +177,7 @@ public class ActionListBuilderTest {
 			);
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>());
+					PREFIX + folderName + TARGET_FOLDER, null, new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
 		}
@@ -189,10 +193,38 @@ public class ActionListBuilderTest {
 			List<MirrorAction> expected = Arrays.asList();
 			// Run
 			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
-					PREFIX + folderName + TARGET_FOLDER, new ArrayList<>(),
+					PREFIX + folderName + TARGET_FOLDER, null, new ArrayList<>(),
 					new ExclusionContainedInFileNameExcludeActionFilter("to-exc"));
 			// Check
 			assertEquals(expected, returned);
+		}
+
+		@DisplayName("Calls the observer methods correctly.")
+		@Test
+		void callsObserverMethodsCorrectly() throws Exception {
+			// Prepare
+			Counter counterFolders = new Counter();
+			Counter counterFiles = new Counter();
+			ActionListBuilderObserver observer = new ActionListBuilderObserver() {
+				@Override
+				public void fileDetected(ActionListBuilderEvent event) {
+					counterFiles.inc();
+				}
+
+				@Override
+				public void folderDetected(ActionListBuilderEvent event) {
+					counterFolders.inc();
+				}
+			};
+			String folderName = "observerTest";
+			new File(PREFIX + folderName + SOURCE_FOLDER + "/afile.txt").setLastModified(DATE);
+			new File(PREFIX + folderName + TARGET_FOLDER + "/afile.txt").setLastModified(DATE);
+			// Run
+			unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER, PREFIX + folderName + TARGET_FOLDER, observer,
+					new ArrayList<>());
+			// Check
+			assertEquals(1, counterFiles.getCount());
+			assertEquals(1, counterFolders.getCount());
 		}
 
 	}

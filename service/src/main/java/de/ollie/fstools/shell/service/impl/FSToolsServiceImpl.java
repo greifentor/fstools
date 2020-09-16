@@ -9,13 +9,21 @@ import org.springframework.stereotype.Service;
 import de.ollie.fstools.filestats.FileStats;
 import de.ollie.fstools.filestats.FileStatsReader;
 import de.ollie.fstools.mirror.ActionListBuilder;
+import de.ollie.fstools.mirror.ActionListBuilderEvent;
+import de.ollie.fstools.mirror.ActionListBuilderObserver;
 import de.ollie.fstools.mirror.CopyFilter;
 import de.ollie.fstools.mirror.ExcludeActionFilter;
 import de.ollie.fstools.mirror.MirrorAction;
 import de.ollie.fstools.mirror.MirrorActionProcessor;
+import de.ollie.fstools.mirror.MirrorActionProcessorEvent;
+import de.ollie.fstools.mirror.MirrorActionProcessorObserver;
 import de.ollie.fstools.mirror.filters.CopyAtAnyTimeFileNamePatternCopyFilter;
 import de.ollie.fstools.mirror.filters.ExclusionContainedInFileNameExcludeActionFilter;
+import de.ollie.fstools.shell.service.BuildActionListEvent;
+import de.ollie.fstools.shell.service.BuildActionListObserver;
 import de.ollie.fstools.shell.service.FSToolsService;
+import de.ollie.fstools.shell.service.ProcessMirrorActionsEvent;
+import de.ollie.fstools.shell.service.ProcessMirrorActionsObserver;
 import de.ollie.fstools.shell.service.converter.MirrorActionFromMirrorActionSOConverter;
 import de.ollie.fstools.shell.service.converter.MirrorActionSOFromMirrorActionConverter;
 import de.ollie.fstools.shell.service.so.MirrorActionSO;
@@ -48,9 +56,22 @@ public class FSToolsServiceImpl implements FSToolsService {
 
 	@Override
 	public List<MirrorActionSO> buildActionList(String sourcePathName, String targetPathName,
-			List<String> excludePatterns, List<String> copyAtAnyTimePatterns) throws IOException {
+			BuildActionListObserver buildActionListObserver, List<String> excludePatterns,
+			List<String> copyAtAnyTimePatterns) throws IOException {
+		ActionListBuilderObserver observer = (buildActionListObserver != null ? new ActionListBuilderObserver() {
+
+			@Override
+			public void fileDetected(ActionListBuilderEvent event) {
+				buildActionListObserver.fileDetected(BuildActionListEvent.of(event.getFileStats()));
+			}
+
+			@Override
+			public void folderDetected(ActionListBuilderEvent event) {
+				buildActionListObserver.folderDetected(BuildActionListEvent.of(event.getFileStats()));
+			}
+		} : null);
 		return actionListBuilder
-				.build(sourcePathName, targetPathName, getCopyFilters(copyAtAnyTimePatterns),
+				.build(sourcePathName, targetPathName, observer, getCopyFilters(copyAtAnyTimePatterns),
 						getExcludeActionFilters(excludePatterns)) //
 				.stream() //
 				.map(mirrorActionSOFromModelConverter::convert) //
@@ -81,13 +102,37 @@ public class FSToolsServiceImpl implements FSToolsService {
 	}
 
 	@Override
-	public void processMirrorActions(List<MirrorActionSO> actionsSO) throws IOException {
+	public void processMirrorActions(List<MirrorActionSO> actionsSO,
+			ProcessMirrorActionsObserver processMirrorActionsObserver) throws IOException {
+		MirrorActionProcessorObserver mirrorActionProcessorObserver = new MirrorActionProcessorObserver() {
+
+			@Override
+			public void copying(MirrorActionProcessorEvent event) {
+				processMirrorActionsObserver.copying(ProcessMirrorActionsEvent.of(event));
+			}
+
+			@Override
+			public void copied(MirrorActionProcessorEvent event) {
+				processMirrorActionsObserver.copied(ProcessMirrorActionsEvent.of(event));
+			}
+
+			@Override
+			public void removing(MirrorActionProcessorEvent event) {
+				processMirrorActionsObserver.removing(ProcessMirrorActionsEvent.of(event));
+			}
+
+			@Override
+			public void removed(MirrorActionProcessorEvent event) {
+				processMirrorActionsObserver.removed(ProcessMirrorActionsEvent.of(event));
+			}
+
+		};
 		List<MirrorAction> actions = actionsSO //
 				.stream() //
 				.map(mirrorActionFromSOConverter::convert) //
 				.collect(Collectors.toList()) //
 		;
-		mirrorActionProcessor.processMirrorActions(actions);
+		mirrorActionProcessor.processMirrorActions(actions, mirrorActionProcessorObserver);
 	}
 
 }

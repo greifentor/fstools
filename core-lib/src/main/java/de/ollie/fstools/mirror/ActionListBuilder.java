@@ -46,21 +46,23 @@ public class ActionListBuilder {
 	 * * File existing in both folder but is more recent in the source folder causes a COPY action. <BR>
 	 * * File existing in the target folder only, causes a REMOVE action.
 	 * 
-	 * @param sourcePathName        The name of the source path.
-	 * @param targetPathName        The name of the target path.
-	 * @param additionalCopyFilters Additional copy filters, if necessary.
-	 * @param excludeActionFilters  Filters to exclude mirror actions.
+	 * @param sourcePathName            The name of the source path.
+	 * @param targetPathName            The name of the target path.
+	 * @param actionListBuilderObserver An observer to get noticed of current progress.
+	 * @param additionalCopyFilters     Additional copy filters, if necessary.
+	 * @param excludeActionFilters      Filters to exclude mirror actions.
 	 * @return A list of action to equalize the passed target folder to the passed source folder.
 	 * @throws IOException If an error occurs while building up the list.
 	 */
 	public List<MirrorAction> build(String sourcePathName, String targetPathName,
-			List<CopyFilter> additionalCopyFilters, ExcludeActionFilter... excludeActionFilters) throws IOException {
+			ActionListBuilderObserver actionListBuilderObserver, List<CopyFilter> additionalCopyFilters,
+			ExcludeActionFilter... excludeActionFilters) throws IOException {
 		ensure(sourcePathName != null, new NullPointerException("source path name cannot be null."));
 		ensure(targetPathName != null, new NullPointerException("target path name cannot be null."));
 		ensure(additionalCopyFilters != null, new NullPointerException("additional copy filters cannot be null."));
 		List<MirrorAction> actions = new ArrayList<>();
-		return fillMirrorActions(actions, sourcePathName, targetPathName, getCopyFilters(additionalCopyFilters),
-				excludeActionFilters);
+		return fillMirrorActions(actions, sourcePathName, targetPathName, actionListBuilderObserver,
+				getCopyFilters(additionalCopyFilters), excludeActionFilters);
 	}
 
 	private List<CopyFilter> getCopyFilters(List<CopyFilter> additionalCopyFilters) {
@@ -70,41 +72,66 @@ public class ActionListBuilder {
 	}
 
 	private List<MirrorAction> fillMirrorActions(List<MirrorAction> actions, String sourceFolderName,
-			String targetFolderName, List<CopyFilter> copyFilters, ExcludeActionFilter... excludeActionFilters)
-			throws IOException {
+			String targetFolderName, ActionListBuilderObserver actionListBuilderObserver, List<CopyFilter> copyFilters,
+			ExcludeActionFilter... excludeActionFilters) throws IOException {
 		sourceFolderName = completePath(sourceFolderName);
 		targetFolderName = completePath(targetFolderName);
-		processSourceFiles(actions, sourceFolderName, targetFolderName, copyFilters);
-		processTargetFiles(actions, sourceFolderName, targetFolderName, copyFilters);
+		processSourceFiles(actions, sourceFolderName, targetFolderName, copyFilters, actionListBuilderObserver,
+				excludeActionFilters);
+		processTargetFiles(actions, sourceFolderName, targetFolderName, copyFilters, actionListBuilderObserver);
 		actions = cleanUpMirrorActionsByExcludeFilters(actions, excludeActionFilters);
 		return actions;
 	}
 
 	private void processSourceFiles(List<MirrorAction> actions, String sourceFolderName, String targetFolderName,
-			List<CopyFilter> copyFilters) throws IOException {
+			List<CopyFilter> copyFilters, ActionListBuilderObserver actionListBuilderObserver,
+			ExcludeActionFilter... excludeActionFilters) throws IOException {
 		List<String> sourceFileNames = getFileNameList(sourceFolderName);
+		if (actionListBuilderObserver != null) {
+			actionListBuilderObserver.folderDetected(ActionListBuilderEvent.of(getFileStats(sourceFolderName)));
+		}
 		for (String fileName : sourceFileNames) {
 			FileStats sourceFileStats = getFileStats(sourceFolderName + fileName);
 			if (sourceFileStats.getType() == FileType.DIRECTORY) {
-				fillMirrorActions(actions, sourceFolderName + fileName, targetFolderName + fileName, copyFilters);
+				FileStats targetFileStats = getFileStats(targetFolderName + fileName);
+				MirrorAction action = new MirrorAction() //
+						.setDifferenceType(getDifferenceTypeOfFileToCopy(sourceFileStats, targetFileStats)) //
+						.setSourceFileName(sourceFileStats.getName()) //
+						.setSourceFileSizeInBytes(sourceFileStats.getSize()) //
+						.setTargetFileName(targetFileStats != null //
+								? targetFileStats.getName() //
+								: targetFolderName + fileName) //
+						.setType(ActionType.COPY) //
+				;
+				if (!isToExclude(action, excludeActionFilters)) {
+					fillMirrorActions(actions, sourceFolderName + fileName, targetFolderName + fileName,
+							actionListBuilderObserver, copyFilters);
+				}
 			} else if (sourceFileStats.getType() == FileType.FILE) {
+				if (actionListBuilderObserver != null) {
+					actionListBuilderObserver.fileDetected(ActionListBuilderEvent.of(sourceFileStats));
+				}
 				FileStats targetFileStats = getFileStats(targetFolderName + fileName);
 				if (isFileToCopy(sourceFileStats, targetFileStats, copyFilters)) {
-					actions.add(new MirrorAction() //
+					MirrorAction action = new MirrorAction() //
 							.setDifferenceType(getDifferenceTypeOfFileToCopy(sourceFileStats, targetFileStats)) //
 							.setSourceFileName(sourceFileStats.getName()) //
+							.setSourceFileSizeInBytes(sourceFileStats.getSize()) //
 							.setTargetFileName(targetFileStats != null //
 									? targetFileStats.getName() //
 									: targetFolderName + fileName) //
 							.setType(ActionType.COPY) //
-					);
+					;
+					if (!isToExclude(action, excludeActionFilters)) {
+						actions.add(action);
+					}
 				}
 			}
 		}
 	}
 
 	private void processTargetFiles(List<MirrorAction> actions, String sourceFolderName, String targetFolderName,
-			List<CopyFilter> copyFilters) throws IOException {
+			List<CopyFilter> copyFilters, ActionListBuilderObserver actionListBuilderObserver) throws IOException {
 		List<String> targetFileNames = getFileNameList(targetFolderName);
 		for (String fileName : targetFileNames) {
 			FileStats sourceFileStats = getFileStats(sourceFolderName + fileName);
@@ -179,7 +206,7 @@ public class ActionListBuilder {
 	public static void main(String[] args) {
 		ActionListBuilder builder = new ActionListBuilder();
 		try {
-			builder.build(args[0], args[1], new ArrayList<>()) //
+			builder.build(args[0], args[1], null, new ArrayList<>()) //
 					.forEach(System.out::println);
 			;
 		} catch (Exception e) {

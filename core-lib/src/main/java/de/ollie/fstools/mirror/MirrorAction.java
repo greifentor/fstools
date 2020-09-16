@@ -28,6 +28,7 @@ public class MirrorAction {
 
 	private DifferenceType differenceType;
 	private String sourceFileName;
+	private long sourceFileSizeInBytes;
 	private String targetFileName;
 	private ActionType type;
 

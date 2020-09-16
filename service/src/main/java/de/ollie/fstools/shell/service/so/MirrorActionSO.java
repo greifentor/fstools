@@ -21,6 +21,7 @@ public class MirrorActionSO {
 
 	private String differenceMessage;
 	private String sourceFileName;
+	private long sourceFileSizeInBytes;
 	private String targetFileName;
 	private ActionTypeSO type;
 

@@ -51,10 +51,10 @@ public class FSToolsServiceImplTest {
 		void callsTheBuildMethodOfTheActionListBuilderWithCorrectParametersNoFiltersPassed() throws Exception {
 			// Prepare
 			List<MirrorActionSO> expected = new ArrayList<>();
-			when(actionListBuilder.build(SOURCE_PATH_NAME, TARGET_PATH_NAME, new ArrayList<>(),
+			when(actionListBuilder.build(SOURCE_PATH_NAME, TARGET_PATH_NAME, null, new ArrayList<>(),
 					new ExcludeActionFilter[0])).thenReturn(new ArrayList<>());
 			// Run
-			List<MirrorActionSO> returned = unitUnderTest.buildActionList(SOURCE_PATH_NAME, TARGET_PATH_NAME,
+			List<MirrorActionSO> returned = unitUnderTest.buildActionList(SOURCE_PATH_NAME, TARGET_PATH_NAME, null,
 					new ArrayList<>(), new ArrayList<>());
 			// Check
 			assertEquals(expected, returned);
@@ -72,10 +72,10 @@ public class FSToolsServiceImplTest {
 			List<String> copyAtAnyTimeFileNamePatterns = Arrays.asList(pattern1, pattern2);
 			List<CopyFilter> copyFilters = Arrays.asList(new CopyAtAnyTimeFileNamePatternCopyFilter(pattern1),
 					new CopyAtAnyTimeFileNamePatternCopyFilter(pattern2));
-			when(actionListBuilder.build(SOURCE_PATH_NAME, TARGET_PATH_NAME, copyFilters, new ExcludeActionFilter[0]))
-					.thenReturn(new ArrayList<>());
+			when(actionListBuilder.build(SOURCE_PATH_NAME, TARGET_PATH_NAME, null, copyFilters,
+					new ExcludeActionFilter[0])).thenReturn(new ArrayList<>());
 			// Run
-			List<MirrorActionSO> returned = unitUnderTest.buildActionList(SOURCE_PATH_NAME, TARGET_PATH_NAME,
+			List<MirrorActionSO> returned = unitUnderTest.buildActionList(SOURCE_PATH_NAME, TARGET_PATH_NAME, null,
 					new ArrayList<>(), copyAtAnyTimeFileNamePatterns);
 			// Check
 			assertEquals(expected, returned);
