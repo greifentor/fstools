@@ -7,4 +7,4 @@
  |_| |___/\__\___/ \___/|_|___/          |___/_| |_|\___|_|_|
                                                              
                                                              
-Version @app.version@
+Version @project.version@

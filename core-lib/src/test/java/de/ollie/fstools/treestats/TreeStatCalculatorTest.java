@@ -112,7 +112,7 @@ public class TreeStatCalculatorTest {
 
 		@Test
 		void test() throws Exception {
-			Path path = Path.of("pom.xml");
+			Path path = Paths.get("pom.xml");
 			BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
 			System.out.printf("fileName         = %s%n", path.toAbsolutePath().toString());
 			System.out.printf("creationTime     = %s%n", attributes.creationTime());

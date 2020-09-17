@@ -84,17 +84,21 @@ public class FSToolsShellComponent {
 	private String mirrorActionSOsToStringTable(List<MirrorActionSO> actions) {
 		StringBuilder sb = new StringBuilder();
 		long totalSize = 0;
+		int filesToCopy = 0;
+		int filesToRemove = 0;
 		for (MirrorActionSO action : actions) {
 			if (action.getType() == ActionTypeSO.COPY) {
 				sb.append(String.format("%-8s %s -> %s%n", String.valueOf(action.getType()), action.getSourceFileName(),
 						action.getTargetFileName()));
 				totalSize += action.getSourceFileSizeInBytes();
+				filesToCopy++;
 			}
 			if (action.getType() == ActionTypeSO.REMOVE) {
 				sb.append(String.format("%-8s %s%n", String.valueOf(action.getType()), action.getTargetFileName()));
+				filesToRemove++;
 			}
 		}
-		sb.append("total (bytes): " + totalSize);
+		sb.append("total (bytes): " + totalSize + " - copies: " + filesToCopy + ", removes: " + filesToRemove);
 		return sb.toString();
 	}
 

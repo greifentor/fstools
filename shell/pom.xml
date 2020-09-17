@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>de.ollie</groupId>
 		<artifactId>fstools</artifactId>
-		<version>${global.version}</version>
+		<version>1.0.1</version>
 	</parent>
 
 	<artifactId>fstools-shell</artifactId>
@@ -27,13 +27,9 @@
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>de.ollie</groupId>
 			<artifactId>fstools-service</artifactId>
-			<version>${global.version}</version>
+			<version>1.0.1</version>
 		</dependency>
 	</dependencies>
 
