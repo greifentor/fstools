@@ -227,6 +227,28 @@ public class ActionListBuilderTest {
 			assertEquals(1, counterFolders.getCount());
 		}
 
+		@DisplayName("Returns a list of actions for a target folder with one more file to exclude than in the source folder.")
+		@Test
+		void calledForATargetFolderWithOneMoreFileToExcludeThanInTheSourceFolder_ReturnsAListOfActions()
+				throws Exception {
+			// Prepare
+			String folderName = "folderWithFileToExcludeToMuchInTarget";
+			new File(PREFIX + folderName + SOURCE_FOLDER + "/afile.txt").setLastModified(DATE);
+			new File(PREFIX + folderName + TARGET_FOLDER + "/afile.txt").setLastModified(DATE);
+			new File(PREFIX + folderName + TARGET_FOLDER + "/file-to-exclude.txt").setLastModified(DATE);
+			List<MirrorAction> expected = Arrays.asList( //
+					new MirrorAction() //
+							.setTargetFileName(PREFIX + folderName + TARGET_FOLDER + "/file-to-exclude.txt") //
+							.setType(ActionType.REMOVE) //
+			);
+			// Run
+			List<MirrorAction> returned = unitUnderTest.build(PREFIX + folderName + SOURCE_FOLDER,
+					PREFIX + folderName + TARGET_FOLDER, null, new ArrayList<>(),
+					new ExclusionContainedInFileNameExcludeActionFilter("to-exclude"));
+			// Check
+			assertEquals(expected, returned);
+		}
+
 	}
 
 }

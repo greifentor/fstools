@@ -112,18 +112,25 @@ public class ActionListBuilder {
 					actionListBuilderObserver.fileDetected(ActionListBuilderEvent.of(sourceFileStats));
 				}
 				FileStats targetFileStats = getFileStats(targetFolderName + fileName);
+				MirrorAction action = new MirrorAction() //
+						.setDifferenceType(getDifferenceTypeOfFileToCopy(sourceFileStats, targetFileStats)) //
+						.setSourceFileName(sourceFileStats.getName()) //
+						.setSourceFileSizeInBytes(sourceFileStats.getSize()) //
+						.setTargetFileName(targetFileStats != null //
+								? targetFileStats.getName() //
+								: targetFolderName + fileName) //
+						.setType(ActionType.COPY) //
+				;
 				if (isFileToCopy(sourceFileStats, targetFileStats, copyFilters)) {
-					MirrorAction action = new MirrorAction() //
-							.setDifferenceType(getDifferenceTypeOfFileToCopy(sourceFileStats, targetFileStats)) //
-							.setSourceFileName(sourceFileStats.getName()) //
-							.setSourceFileSizeInBytes(sourceFileStats.getSize()) //
-							.setTargetFileName(targetFileStats != null //
-									? targetFileStats.getName() //
-									: targetFolderName + fileName) //
-							.setType(ActionType.COPY) //
-					;
 					if (!isToExclude(action, excludeActionFilters)) {
 						actions.add(action);
+					}
+				} else {
+					if (isToExclude(action, excludeActionFilters) && (targetFileStats != null)) {
+						actions.add(new MirrorAction() //
+								.setTargetFileName(targetFileStats.getName()) //
+								.setType(ActionType.REMOVE) //
+						);
 					}
 				}
 			}

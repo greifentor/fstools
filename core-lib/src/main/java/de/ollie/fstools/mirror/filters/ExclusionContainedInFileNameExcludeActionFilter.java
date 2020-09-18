@@ -2,6 +2,7 @@ package de.ollie.fstools.mirror.filters;
 
 import de.ollie.fstools.mirror.ExcludeActionFilter;
 import de.ollie.fstools.mirror.MirrorAction;
+import de.ollie.fstools.mirror.MirrorAction.ActionType;
 
 /**
  * A filter for file name exclusions (means the file name contains a specific string).
@@ -19,7 +20,8 @@ public class ExclusionContainedInFileNameExcludeActionFilter extends BaseFilter 
 
 	@Override
 	public boolean isToExclude(MirrorAction mirrorAction) {
-		return mirrorAction.getTargetFileName().toLowerCase().contains(fileNameFragment);
+		return (mirrorAction.getType() != ActionType.REMOVE)
+				&& mirrorAction.getSourceFileName().toLowerCase().contains(fileNameFragment);
 	}
 
 }
