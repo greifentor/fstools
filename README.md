@@ -25,7 +25,8 @@ To start the shell component type
 
 in a operating system shell (in the project folder). Take care to type the correct version number of the fstools.
 
-In the fstools shell type `help` to get an overview of the commands.
+In the fstools shell type `help` to get an overview of the commands. Type `help` followed by a specific command (e. g.
+`help mirror`) to get a specific help for the command.
 
 ### FileSystemTreeTraversal
 

@@ -13,14 +13,14 @@ import lombok.experimental.Accessors;
  */
 @Accessors(chain = true)
 @Data
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.PROTECTED)
 public class MirrorActionProcessorEvent {
 
 	private String sourceFileName;
 	private String targetFileName;
 	private ActionType type;
 
-	private MirrorActionProcessorEvent() {
+	protected MirrorActionProcessorEvent() {
 		super();
 	}
 
