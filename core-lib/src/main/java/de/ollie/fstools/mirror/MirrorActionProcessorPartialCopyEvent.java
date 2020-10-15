@@ -2,6 +2,7 @@ package de.ollie.fstools.mirror;
 
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -12,6 +13,7 @@ import lombok.experimental.Accessors;
  */
 @Accessors(chain = true)
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Setter(AccessLevel.PRIVATE)
 public class MirrorActionProcessorPartialCopyEvent extends MirrorActionProcessorEvent {
 
