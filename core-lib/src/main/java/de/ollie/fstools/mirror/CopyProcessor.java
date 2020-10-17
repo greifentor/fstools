@@ -27,7 +27,11 @@ public class CopyProcessor {
 	 * using the "Files.copy" method. Larger files are copied by the "Copier" class of the "fstools". This allows to
 	 * monitor the copy process.
 	 * 
-	 * 
+	 * @param action                        The mirror action which causes the file copy.
+	 * @param mirrorActionProcessorObserver An observer for the copy action which is called only files larger than
+	 *                                      "minFileLengthForCopier".
+	 * @param minFileLengthForCopier        A minimum file size which causes a use Copier instead of the "Files.copy"
+	 *                                      method. This allows to monitor the copy process.
 	 */
 	public void copyFile(MirrorAction action, MirrorActionProcessorObserver mirrorActionProcessorObserver,
 			int minFileLengthForCopier) throws IOException {
