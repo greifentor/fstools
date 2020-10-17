@@ -17,6 +17,7 @@ import de.ollie.fstools.mirror.MirrorAction;
 import de.ollie.fstools.mirror.MirrorActionProcessor;
 import de.ollie.fstools.mirror.MirrorActionProcessorEvent;
 import de.ollie.fstools.mirror.MirrorActionProcessorObserver;
+import de.ollie.fstools.mirror.MirrorActionProcessorPartialCopyEvent;
 import de.ollie.fstools.mirror.filters.CopyAtAnyTimeFileNamePatternCopyFilter;
 import de.ollie.fstools.mirror.filters.ExclusionContainedInFileNameExcludeActionFilter;
 import de.ollie.fstools.shell.service.BuildActionListEvent;
@@ -103,7 +104,7 @@ public class FSToolsServiceImpl implements FSToolsService {
 
 	@Override
 	public void processMirrorActions(List<MirrorActionSO> actionsSO,
-			ProcessMirrorActionsObserver processMirrorActionsObserver) throws IOException {
+			ProcessMirrorActionsObserver processMirrorActionsObserver, int minFileSizeForCopier) throws IOException {
 		MirrorActionProcessorObserver mirrorActionProcessorObserver = new MirrorActionProcessorObserver() {
 
 			@Override
@@ -114,6 +115,11 @@ public class FSToolsServiceImpl implements FSToolsService {
 			@Override
 			public void copied(MirrorActionProcessorEvent event) {
 				processMirrorActionsObserver.copied(ProcessMirrorActionsEvent.of(event));
+			}
+
+			@Override
+			public void partialCopied(MirrorActionProcessorPartialCopyEvent event) {
+				processMirrorActionsObserver.partialCopied(ProcessMirrorActionsEvent.of(event));
 			}
 
 			@Override
@@ -132,7 +138,7 @@ public class FSToolsServiceImpl implements FSToolsService {
 				.map(mirrorActionFromSOConverter::convert) //
 				.collect(Collectors.toList()) //
 		;
-		mirrorActionProcessor.processMirrorActions(actions, mirrorActionProcessorObserver);
+		mirrorActionProcessor.processMirrorActions(actions, mirrorActionProcessorObserver, minFileSizeForCopier);
 	}
 
 }

@@ -145,7 +145,8 @@ public class FSToolsShellComponent {
 
 	@ShellMethod("Mirrors source path to the target path.")
 	public String mirror(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes,
-			@ShellOption(defaultValue = "") String copyAtAnyTime) {
+			@ShellOption(defaultValue = "") String copyAtAnyTime,
+			@ShellOption(defaultValue = "104857600") int minFileSizeForCopier) {
 		try {
 			Counter actionCount = new Counter();
 			Counter copied = new Counter();
@@ -167,6 +168,12 @@ public class FSToolsShellComponent {
 				}
 
 				@Override
+				public void partialCopied(ProcessMirrorActionsEvent event) {
+					System.out.print(getPercentileString(actions.size(), actionCount.getCount()) + "partial copied "
+							+ event.getTargetFileName());
+				}
+
+				@Override
 				public void removing(ProcessMirrorActionsEvent event) {
 					actionCount.inc();
 					System.out.print(getPercentileString(actions.size(), actionCount.getCount()) + "removing "
@@ -180,7 +187,7 @@ public class FSToolsShellComponent {
 				}
 
 			};
-			fsToolsService.processMirrorActions(actions, observer);
+			fsToolsService.processMirrorActions(actions, observer, minFileSizeForCopier);
 			return "done (copied: " + copied.getCount() + ", removed: " + removed.getCount() + ")";
 		} catch (Exception e) {
 			e.printStackTrace();

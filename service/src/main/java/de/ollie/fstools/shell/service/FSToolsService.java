@@ -14,20 +14,23 @@ import de.ollie.fstools.shell.service.so.MirrorActionSO;
 public interface FSToolsService {
 
 	/**
-	 * Returns a list of actions which are necessary to change the target path with regards to content of the source
-	 * path.
+	 * Returns a list of actions which are necessary to change the target path with
+	 * regards to content of the source path.
 	 * 
 	 * @param sourcePathName          The source path.
 	 * @param targetPathName          The target path.
-	 * @param buildActionListObserver An observer to get noticed of the current progress of action list building (or
-	 *                                null, if no notification requested.
-	 * @param excludePatterns         A comma separated list of name patterns which are to exclude from copy process at
-	 *                                any time.
-	 * @param copyAtAnyTimePatterns   A comma separated list of name patterns for files which are to copy at any
-	 *                                process.
-	 * @return A list list of actions which are necessary to change the target path with regards to content of the
-	 *         source path or an empty list if both paths are of equal content.
-	 * @throws IOException If something gets wrong while reading the file information.
+	 * @param buildActionListObserver An observer to get noticed of the current
+	 *                                progress of action list building (or null, if
+	 *                                no notification requested.
+	 * @param excludePatterns         A comma separated list of name patterns which
+	 *                                are to exclude from copy process at any time.
+	 * @param copyAtAnyTimePatterns   A comma separated list of name patterns for
+	 *                                files which are to copy at any process.
+	 * @return A list list of actions which are necessary to change the target path
+	 *         with regards to content of the source path or an empty list if both
+	 *         paths are of equal content.
+	 * @throws IOException If something gets wrong while reading the file
+	 *                     information.
 	 */
 	List<MirrorActionSO> buildActionList(String sourcePathName, String targetPathName,
 			BuildActionListObserver buildActionListObserser, List<String> excludePatterns,
@@ -46,10 +49,14 @@ public interface FSToolsService {
 	 * Processes the passed mirror actions.
 	 * 
 	 * @param mirrorActions                The mirror actions to process.
-	 * @param processMirrorActionsObserver An observer for mirror action processing progress observing.
+	 * @param processMirrorActionsObserver An observer for mirror action processing
+	 *                                     progress observing.
+	 * @param minFileSizeForCopier         The minimum size for files which are to
+	 *                                     copy with with Copier instead of
+	 *                                     "Files.copy" method.
 	 * @throws IOException If an error occurs while processing the mirror actions.
 	 */
-	void processMirrorActions(List<MirrorActionSO> actions, ProcessMirrorActionsObserver processMirrorActionsObserver)
-			throws IOException;
+	void processMirrorActions(List<MirrorActionSO> actions, ProcessMirrorActionsObserver processMirrorActionsObserver,
+			int minFileSizeForCopier) throws IOException;
 
 }

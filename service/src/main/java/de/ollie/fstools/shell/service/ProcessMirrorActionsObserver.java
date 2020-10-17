@@ -22,6 +22,13 @@ public interface ProcessMirrorActionsObserver {
 	void copied(ProcessMirrorActionsEvent event);
 
 	/**
+	 * Called if the mirror action processor has copied a part of a file.
+	 * 
+	 * @param event The necessary data of the remove action.
+	 */
+	void partialCopied(ProcessMirrorActionsEvent event);
+
+	/**
 	 * Called if the mirror action processor is going to remove a file.
 	 * 
 	 * @param event The necessary data of the remove action.

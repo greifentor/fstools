@@ -127,13 +127,15 @@ public class ActionListBuilderTest {
 			String folderName = "folderWithDifferentFileTime";
 			new File(PREFIX + folderName + SOURCE_FOLDER + "/afile.txt").setLastModified(DATE);
 			new File(PREFIX + folderName + TARGET_FOLDER + "/afile.txt").setLastModified(DATE);
-			new File(PREFIX + folderName + SOURCE_FOLDER + "/differentfile-time.txt").setLastModified(DATE);
+			File f = new File(PREFIX + folderName + SOURCE_FOLDER + "/differentfile-time.txt");
+			f.setLastModified(DATE);
 			new File(PREFIX + folderName + TARGET_FOLDER + "/differentfile-time.txt").setLastModified(DATE - 1000);
+			long length = f.length();
 			List<MirrorAction> expected = Arrays.asList( //
 					new MirrorAction() //
 							.setDifferenceType(DifferenceType.TIME) //
 							.setSourceFileName(PREFIX + folderName + SOURCE_FOLDER + "/differentfile-time.txt") //
-							.setSourceFileSizeInBytes(52) //
+							.setSourceFileSizeInBytes(length) //
 							.setTargetFileName(PREFIX + folderName + TARGET_FOLDER + "/differentfile-time.txt") //
 							.setType(ActionType.COPY) //
 			);
@@ -227,7 +229,8 @@ public class ActionListBuilderTest {
 			assertEquals(1, counterFolders.getCount());
 		}
 
-		@DisplayName("Returns a list of actions for a target folder with one more file to exclude than in the source folder.")
+		@DisplayName("Returns a list of actions for a target folder with one more file to exclude than in the source "
+				+ "folder.")
 		@Test
 		void calledForATargetFolderWithOneMoreFileToExcludeThanInTheSourceFolder_ReturnsAListOfActions()
 				throws Exception {
