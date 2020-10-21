@@ -2,6 +2,7 @@ package de.ollie.fstools.shell;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +19,7 @@ import de.ollie.fstools.shell.service.BuildActionListObserver;
 import de.ollie.fstools.shell.service.FSToolsService;
 import de.ollie.fstools.shell.service.ProcessMirrorActionsEvent;
 import de.ollie.fstools.shell.service.ProcessMirrorActionsObserver;
+import de.ollie.fstools.shell.service.TouchService;
 import de.ollie.fstools.shell.service.so.MirrorActionSO;
 import de.ollie.fstools.shell.service.so.MirrorActionSO.ActionTypeSO;
 
@@ -31,6 +33,8 @@ public class FSToolsShellComponent {
 
 	@Autowired
 	private FSToolsService fsToolsService;
+	@Autowired
+	private TouchService touchService;
 
 	@ShellMethod("Shows a list of necessary actions to fit the content of the target path to that of the source path.")
 	public String cmp(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes,
@@ -137,8 +141,8 @@ public class FSToolsShellComponent {
 		for (String path : pathes) {
 			FileStats fileStats = fsToolsService
 					.getFileStats(basePath.replace("\\", "/") + "/" + path.replace("\\", "/"));
-			sb.append(String.format("%-10s %10d %s%n", String.valueOf(fileStats.getType()), fileStats.getSize(),
-					fileStats.getName()));
+			sb.append(String.format("%-10s %10d %20s %s%n", String.valueOf(fileStats.getType()), fileStats.getSize(),
+					fileStats.getLastModifiedTime().toString(), fileStats.getName()));
 		}
 		return sb.toString();
 	}
@@ -153,6 +157,8 @@ public class FSToolsShellComponent {
 			Counter removed = new Counter();
 			List<MirrorActionSO> actions = loadMirrorActions(sourcePathName, targetPathName, excludes, copyAtAnyTime);
 			ProcessMirrorActionsObserver observer = new ProcessMirrorActionsObserver() {
+
+				private String lastTargetFileName;
 
 				@Override
 				public void copying(ProcessMirrorActionsEvent event) {
@@ -169,8 +175,15 @@ public class FSToolsShellComponent {
 
 				@Override
 				public void partialCopied(ProcessMirrorActionsEvent event) {
-					System.out.print(getPercentileString(actions.size(), actionCount.getCount()) + "partial copied "
-							+ event.getTargetFileName());
+					if (event.getTargetFileName().equals(lastTargetFileName)) {
+						System.out.print("\b\b\b\b\b\b\b\b\b\b");
+					}
+					long bytesCopied = event.getBytesTotal() - event.getBytesLeft();
+					double percentWrote = (100.0 / (double) event.getBytesTotal()) * (double) bytesCopied;
+					System.out.print(String.format(" (%6.2f%%)", percentWrote));
+					lastTargetFileName = event.getTargetFileName();
+//					System.out.println(getPercentileString(actions.size(), actionCount.getCount()) + "partial copied "
+//							+ "(" + event.getBytesLeft() + ") " + event.getTargetFileName());
 				}
 
 				@Override
@@ -197,7 +210,42 @@ public class FSToolsShellComponent {
 
 	private String getPercentileString(int total, int count) {
 		double percentiles = ((double) count / (double) total) * 100;
-		return String.format("(% 6.2f) - ", percentiles);
+		return String.format("(%6.2f%%) - ", percentiles);
+	}
+
+	@ShellMethod("Mirrors source path to the target path.")
+	public String touch(String sourcePathName, @ShellOption(defaultValue = "now") String timestamp,
+			@ShellOption(defaultValue = "false") boolean recursive) {
+		LocalDateTime lastModifiedDate = LocalDateTime.now();
+		if (!timestamp.equalsIgnoreCase("now")) {
+			lastModifiedDate = LocalDateTime.parse(timestamp);
+		}
+		touchFile(sourcePathName, lastModifiedDate, recursive);
+		return sourcePathName + " last modified set to: " + lastModifiedDate;
+	}
+
+	private void touchFile(String fileName, LocalDateTime timestamp, boolean recursive) {
+		File f = new File(fileName);
+		if (f.list() != null) {
+			for (String fn : f.list()) {
+				if (new File(fn).isDirectory() && recursive) {
+					touchFile(fn, timestamp, recursive);
+				} else {
+					touchFile(fileName, timestamp);
+				}
+			}
+		} else {
+			touchFile(fileName, timestamp);
+		}
+	}
+
+	private void touchFile(String fn, LocalDateTime timestamp) {
+		try {
+			System.out.println(fn + " new last modified time: " + timestamp);
+			touchService.touch(fn, timestamp);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
