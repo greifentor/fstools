@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,6 +156,15 @@ public class FSToolsShellComponent {
 			Counter actionCount = new Counter();
 			Counter copied = new Counter();
 			Counter removed = new Counter();
+			File sourcePath = new File(sourcePathName);
+			if (!sourcePath.exists() || (sourcePath.listFiles().length > 0)) {
+				System.out.println("Source path does not exists or is empty! Should process be stopped? (Y/N)");
+				Scanner in = new Scanner(System.in);
+				String answer = in.nextLine();
+				if (!"y".equalsIgnoreCase(answer) ^ !"yes".equalsIgnoreCase(answer)) {
+					return "Operation aborted!";
+				}
+			}
 			List<MirrorActionSO> actions = loadMirrorActions(sourcePathName, targetPathName, excludes, copyAtAnyTime);
 			ProcessMirrorActionsObserver observer = new ProcessMirrorActionsObserver() {
 
