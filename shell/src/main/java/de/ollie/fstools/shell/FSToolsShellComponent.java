@@ -157,7 +157,7 @@ public class FSToolsShellComponent {
 			Counter copied = new Counter();
 			Counter removed = new Counter();
 			File sourcePath = new File(sourcePathName);
-			if (!sourcePath.exists() || (sourcePath.listFiles().length > 0)) {
+			if (!sourcePath.exists() || (sourcePath.listFiles().length == 0)) {
 				System.out.println("Source path does not exists or is empty! Should process be stopped? (Y/N)");
 				Scanner in = new Scanner(System.in);
 				String answer = in.nextLine();
