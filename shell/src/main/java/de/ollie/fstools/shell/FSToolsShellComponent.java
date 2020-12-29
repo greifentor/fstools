@@ -153,6 +153,7 @@ public class FSToolsShellComponent {
 			@ShellOption(defaultValue = "") String copyAtAnyTime,
 			@ShellOption(defaultValue = "104857600") int minFileSizeForCopier) {
 		try {
+			System.out.println(sourcePathName + " -> " + targetPathName);
 			Counter actionCount = new Counter();
 			Counter copied = new Counter();
 			Counter removed = new Counter();
