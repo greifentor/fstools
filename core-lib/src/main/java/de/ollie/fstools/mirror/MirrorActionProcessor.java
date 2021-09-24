@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -72,16 +71,22 @@ public class MirrorActionProcessor {
 	private void copyFile(MirrorAction action, MirrorActionProcessorObserver mirrorActionProcessorObserver,
 			int minFileLengthForCopier) throws IOException {
 		long sourceFileLength = new File(action.getSourceFileName()).length();
-		if (sourceFileLength >= minFileLengthForCopier) {
-			FileCopier copier = new FileCopier(computeBufferSize(sourceFileLength));
-			copier.addFileCopierListener(
-					event -> mirrorActionProcessorObserver.partialCopied(MirrorActionProcessorPartialCopyEvent
-							.of(action, event.getBytesCopied() + event.getBytesLeft(), event.getBytesLeft())));
-			copier.copy(new File(action.getSourceFileName()), new File(action.getTargetFileName()));
-		} else {
-			Files.copy(Paths.get(action.getSourceFileName()), Paths.get(action.getTargetFileName()),
-					StandardCopyOption.REPLACE_EXISTING);
-		}
+//		if (sourceFileLength >= minFileLengthForCopier) {
+		FileCopier copier = new FileCopier(computeBufferSize(sourceFileLength));
+		copier
+				.addFileCopierListener(
+						event -> mirrorActionProcessorObserver
+								.partialCopied(
+										MirrorActionProcessorPartialCopyEvent
+												.of(
+														action,
+														event.getBytesCopied() + event.getBytesLeft(),
+														event.getBytesLeft())));
+		copier.copy(new File(action.getSourceFileName()), new File(action.getTargetFileName()));
+//		} else {
+//			Files.copy(Paths.get(action.getSourceFileName()), Paths.get(action.getTargetFileName()),
+//					StandardCopyOption.REPLACE_EXISTING);
+//	}
 	}
 
 	private int computeBufferSize(long sourceFileLength) {
