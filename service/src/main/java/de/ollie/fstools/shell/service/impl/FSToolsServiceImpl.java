@@ -15,6 +15,7 @@ import de.ollie.fstools.mirror.CopyFilter;
 import de.ollie.fstools.mirror.ExcludeActionFilter;
 import de.ollie.fstools.mirror.MirrorAction;
 import de.ollie.fstools.mirror.MirrorActionProcessor;
+import de.ollie.fstools.mirror.MirrorActionProcessorErrorEvent;
 import de.ollie.fstools.mirror.MirrorActionProcessorEvent;
 import de.ollie.fstools.mirror.MirrorActionProcessorObserver;
 import de.ollie.fstools.mirror.MirrorActionProcessorPartialCopyEvent;
@@ -130,6 +131,11 @@ public class FSToolsServiceImpl implements FSToolsService {
 			@Override
 			public void removed(MirrorActionProcessorEvent event) {
 				processMirrorActionsObserver.removed(ProcessMirrorActionsEvent.of(event));
+			}
+
+			@Override
+			public void errorDetected(MirrorActionProcessorErrorEvent event) {
+				processMirrorActionsObserver.errorDetected(ProcessMirrorActionsEvent.of(event));
 			}
 
 		};

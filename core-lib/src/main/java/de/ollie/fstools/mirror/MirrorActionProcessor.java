@@ -35,24 +35,24 @@ public class MirrorActionProcessor {
 			MirrorActionProcessorObserver mirrorActionProcessorObserver, int minFileLengthForCopier)
 			throws IOException {
 		for (MirrorAction action : actions) {
-			if (action.getType() == ActionType.COPY) {
-				createFolderIfNecessary(action);
-				mirrorActionProcessorObserver.copying(MirrorActionProcessorEvent.of(action));
-				copyFile(action, mirrorActionProcessorObserver, minFileLengthForCopier);
-				mirrorActionProcessorObserver.copied(MirrorActionProcessorEvent.of(action));
-			} else if (action.getType() == ActionType.REMOVE) {
-				mirrorActionProcessorObserver.removing(MirrorActionProcessorEvent.of(action));
-				Stream<Path> pathes = Files.walk(Paths.get(action.getTargetFileName()));
-				try {
-					pathes //
-							.sorted(Comparator.reverseOrder()) //
-							.map(Path::toFile) //
-							.forEach(File::delete) //
-					;
-				} finally {
-					pathes.close();
-				}
-				mirrorActionProcessorObserver.removed(MirrorActionProcessorEvent.of(action));
+            try {
+                if (action.getType() == ActionType.COPY) {
+                    createFolderIfNecessary(action);
+                    mirrorActionProcessorObserver.copying(MirrorActionProcessorEvent.of(action));
+                    copyFile(action, mirrorActionProcessorObserver, minFileLengthForCopier);
+                    mirrorActionProcessorObserver.copied(MirrorActionProcessorEvent.of(action));
+                } else if (action.getType() == ActionType.REMOVE) {
+                    mirrorActionProcessorObserver.removing(MirrorActionProcessorEvent.of(action));
+                    Stream<Path> pathes = Files.walk(Paths.get(action.getTargetFileName()));
+                    try {
+                        pathes.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+                    } finally {
+                        pathes.close();
+                    }
+                    mirrorActionProcessorObserver.removed(MirrorActionProcessorEvent.of(action));
+                }
+			} catch (Exception exception) {
+                mirrorActionProcessorObserver.errorDetected(MirrorActionProcessorErrorEvent.of(action, exception));
 			}
 		}
 	}

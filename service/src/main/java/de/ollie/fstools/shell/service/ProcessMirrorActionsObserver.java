@@ -42,4 +42,11 @@ public interface ProcessMirrorActionsObserver {
 	 */
 	void removed(ProcessMirrorActionsEvent event);
 
+	/**
+	 * Called if an error occurs while copy or remove action.
+	 * 
+	 * @param event The necessary data of the failed action.
+	 */
+	void errorDetected(ProcessMirrorActionsEvent event);
+
 }

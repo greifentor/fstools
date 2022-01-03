@@ -156,6 +156,7 @@ public class FSToolsShellComponent {
 			System.out.println(sourcePathName + " -> " + targetPathName);
 			Counter actionCount = new Counter();
 			Counter copied = new Counter();
+			Counter errors = new Counter();
 			Counter removed = new Counter();
 			File sourcePath = new File(sourcePathName);
 			if (!sourcePath.exists() || (sourcePath.listFiles().length == 0)) {
@@ -190,7 +191,7 @@ public class FSToolsShellComponent {
 						System.out.print("\b\b\b\b\b\b\b\b\b\b");
 					}
 					long bytesCopied = event.getBytesTotal() - event.getBytesLeft();
-					double percentWrote = (100.0 / (double) event.getBytesTotal()) * (double) bytesCopied;
+					double percentWrote = (100.0 / (double) event.getBytesTotal()) * bytesCopied;
 					System.out.print(String.format(" (%6.2f%%)", percentWrote));
 					lastTargetFileName = event.getTargetFileName();
 //					System.out.println(getPercentileString(actions.size(), actionCount.getCount()) + "partial copied "
@@ -210,9 +211,15 @@ public class FSToolsShellComponent {
 					removed.inc();
 				}
 
+				@Override
+				public void errorDetected(ProcessMirrorActionsEvent event) {
+					errors.inc();
+				}
+
 			};
 			fsToolsService.processMirrorActions(actions, observer, minFileSizeForCopier);
-			return "done (copied: " + copied.getCount() + ", removed: " + removed.getCount() + ")";
+			return "done (copied: " + copied.getCount() + ", removed: " + removed.getCount() + ", errors: "
+					+ errors.getCount() + ")";
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "error: " + e.getMessage();

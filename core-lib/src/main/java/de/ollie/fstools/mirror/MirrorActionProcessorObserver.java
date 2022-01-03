@@ -41,5 +41,12 @@ public interface MirrorActionProcessorObserver {
 	 * @param event The necessary data of the remove action.
 	 */
 	void removed(MirrorActionProcessorEvent event);
+	
+	/**
+	 * Called if an error is detected during a single copy or remove operation.
+	 *
+	 * @param event The necessary data of the error and the action which caused it.
+	 */
+    void errorDetected(MirrorActionProcessorErrorEvent event);
 
 }
