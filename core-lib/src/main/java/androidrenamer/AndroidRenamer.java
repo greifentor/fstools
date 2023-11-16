@@ -64,28 +64,30 @@ public class AndroidRenamer implements DirectoryFoundListener, FileFoundListener
 		String replacement;
 	}
 
-	private List<Mapping> mappings = List
-			.of(
-					new Mapping(" - .", "."),
-					new Mapping("?", ""),
-					new Mapping(": ", " - "),
-					new Mapping(":", " - "),
-					new Mapping("\"", "'"),
-					new Mapping("Ä", "Ae"),
-					new Mapping("ä", "ae"),
-					new Mapping("Ö", "Oe"),
-					new Mapping("ö", "oe"),
-					new Mapping("Ü", "Ue"),
-					new Mapping("ü", "ue"),
-					new Mapping("ß", "ss"),
-					new Mapping("‐", "-"),
-					new Mapping("–", "-"),
-					new Mapping("À", "A"),
-					new Mapping("É", "E"),
-					new Mapping("è", "e"),
-					new Mapping("é", "e"),
-					new Mapping("ó", "o"),
-					new Mapping("’", "'"));
+	private List<Mapping> mappings =
+			List
+					.of(
+							new Mapping(" - .", "."),
+							new Mapping("?", ""),
+							new Mapping(": ", " - "),
+							new Mapping(":", " - "),
+							new Mapping("\"", "'"),
+							new Mapping("Ä", "Ae"),
+							new Mapping("ä", "ae"),
+							new Mapping("Ö", "Oe"),
+							new Mapping("ö", "oe"),
+							new Mapping("Ü", "Ue"),
+							new Mapping("ü", "ue"),
+							new Mapping("ß", "ss"),
+							new Mapping("‐", "-"),
+							new Mapping("–", "-"),
+							new Mapping("À", "A"),
+							new Mapping("É", "E"),
+							new Mapping("è", "e"),
+							new Mapping("é", "e"),
+							new Mapping("ï", "i"),
+							new Mapping("ó", "o"),
+							new Mapping("’", "'"));
 
 	@Override
 	public void fileFound(FileFoundEvent event) {
@@ -96,6 +98,7 @@ public class AndroidRenamer implements DirectoryFoundListener, FileFoundListener
 			for (Mapping mapping : mappings) {
 				fileName = fileName.replace(mapping.getKey(), mapping.getReplacement());
 			}
+			fileName = fileName.replace(" - .", "");
 			Path newPath = Path.of(pathName, fileName);
 			System.out.println("file: " + event.getPath() + " -> " + newPath);
 			try {
