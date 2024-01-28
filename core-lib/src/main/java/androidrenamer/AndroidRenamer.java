@@ -87,6 +87,7 @@ public class AndroidRenamer implements DirectoryFoundListener, FileFoundListener
 							new Mapping("é", "e"),
 							new Mapping("ï", "i"),
 							new Mapping("ó", "o"),
+							new Mapping("½", "einhalb"),
 							new Mapping("’", "'"));
 
 	@Override
