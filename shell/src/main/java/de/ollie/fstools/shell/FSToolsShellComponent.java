@@ -10,8 +10,8 @@ import java.util.Scanner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.shell.standard.ShellComponent;
-import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.command.annotation.Command;
+import org.springframework.shell.command.annotation.Option;
 import org.springframework.shell.standard.ShellOption;
 
 import de.ollie.fstools.filestats.FileStats;
@@ -29,7 +29,7 @@ import de.ollie.fstools.shell.service.so.MirrorActionSO.ActionTypeSO;
  *
  * @author ollie (11.09.2020)
  */
-@ShellComponent
+@Command
 public class FSToolsShellComponent {
 
 	@Autowired
@@ -37,9 +37,9 @@ public class FSToolsShellComponent {
 	@Autowired
 	private TouchService touchService;
 
-	@ShellMethod("Shows a list of necessary actions to fit the content of the target path to that of the source path.")
+	@Command(command = "cmp", description="Shows a list of necessary actions to fit the content of the target path to that of the source path.")
 	public String cmp(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes,
-			@ShellOption(defaultValue = "") String copyAtAnyTime) {
+			@Option(defaultValue = "") String copyAtAnyTime) {
 		try {
 			return mirrorActionSOsToStringTable(
 					loadMirrorActions(sourcePathName, targetPathName, excludes, copyAtAnyTime));
@@ -107,7 +107,7 @@ public class FSToolsShellComponent {
 		return sb.toString();
 	}
 
-	@ShellMethod("Shows the file stats for the passed path")
+	@Command(command = "fs", description = "Shows the file stats for the passed path")
 	public String fs(String path) {
 		try {
 			return fileStatsToString(fsToolsService.getFileStats(path));
@@ -127,7 +127,7 @@ public class FSToolsShellComponent {
 				String.valueOf(fileStats.getLastModifiedTime()));
 	}
 
-	@ShellMethod("Shows the file stats of all file in the path")
+	@Command(command = "ls", description = "Shows the file stats of all file in the path")
 	public String ls(@ShellOption(defaultValue = ".") String path) {
 		try {
 			String[] pathes = new File(path).list();
@@ -148,10 +148,10 @@ public class FSToolsShellComponent {
 		return sb.toString();
 	}
 
-	@ShellMethod("Mirrors source path to the target path.")
-	public String mirror(String sourcePathName, String targetPathName, @ShellOption(defaultValue = "") String excludes,
-			@ShellOption(defaultValue = "") String copyAtAnyTime,
-			@ShellOption(defaultValue = "104857600") int minFileSizeForCopier) {
+	@Command(command = "mirror", description = "Mirrors source path to the target path.")
+	public String mirror(String sourcePathName, String targetPathName, @Option(defaultValue = "") String excludes,
+			@Option(defaultValue = "") String copyAtAnyTime,
+			@Option(defaultValue = "104857600") int minFileSizeForCopier) {
 		try {
 			System.out.println(sourcePathName + " -> " + targetPathName);
 			Counter actionCount = new Counter();
@@ -231,9 +231,9 @@ public class FSToolsShellComponent {
 		return String.format("(%6.2f%%) - ", percentiles);
 	}
 
-	@ShellMethod("Mirrors source path to the target path.")
-	public String touch(String sourcePathName, @ShellOption(defaultValue = "now") String timestamp,
-			@ShellOption(defaultValue = "false") boolean recursive) {
+	@Command(command = "touch", description = "Mirrors source path to the target path.")
+	public String touch(String sourcePathName, @Option(defaultValue = "now") String timestamp,
+			@Option(defaultValue = "false") boolean recursive) {
 		LocalDateTime lastModifiedDate = LocalDateTime.now();
 		if (!timestamp.equalsIgnoreCase("now")) {
 			lastModifiedDate = LocalDateTime.parse(timestamp);
